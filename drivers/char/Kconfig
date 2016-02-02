@@ -611,5 +611,8 @@ config TILE_SROM
 
 source "drivers/char/xillybus/Kconfig"
 
+config BUZZER_GPIO
+    tristate "buzzer driver depend on gpio"
+
 endmenu
 
