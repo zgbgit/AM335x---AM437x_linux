@@ -131,6 +131,27 @@ static const struct i2c_device_id at24_ids[] = {
 };
 MODULE_DEVICE_TABLE(i2c, at24_ids);
 
+#ifdef CONFIG_OF
+
+static const struct of_device_id at24_of_match[] = {
+	{ .compatible = "at24,24c00",	.data = (void *) AT24_DEVICE_MAGIC(128 / 8, AT24_FLAG_TAKE8ADDR) },
+	{ .compatible = "at24,24c01",	.data = (void *) AT24_DEVICE_MAGIC(1024 / 8, 0) },
+	{ .compatible = "at24,24c02",	.data = (void *) AT24_DEVICE_MAGIC(2048 / 8, 0) },
+	{ .compatible = "at24,spd",	.data = (void *) AT24_DEVICE_MAGIC(2048 / 8, AT24_FLAG_READONLY | AT24_FLAG_IRUGO) },
+	{ .compatible = "at24,24c04",	.data = (void *) AT24_DEVICE_MAGIC(4096 / 8, 0) },
+	{ .compatible = "at24,24c08",	.data = (void *) AT24_DEVICE_MAGIC(8192 / 8, 0) },
+	{ .compatible = "at24,24c16",	.data = (void *) AT24_DEVICE_MAGIC(16384 / 8, 0) },
+	{ .compatible = "at24,24c32",	.data = (void *) AT24_DEVICE_MAGIC(32768 / 8, AT24_FLAG_ADDR16) },
+	{ .compatible = "at24,24c64",	.data = (void *) AT24_DEVICE_MAGIC(65536 / 8, AT24_FLAG_ADDR16) },
+	{ .compatible = "at24,24c128",	.data = (void *) AT24_DEVICE_MAGIC(131072 / 8, AT24_FLAG_ADDR16) },
+	{ .compatible = "at24,24c256",	.data = (void *) AT24_DEVICE_MAGIC(262144 / 8, AT24_FLAG_ADDR16) },
+	{ .compatible = "at24,24c512",	.data = (void *) AT24_DEVICE_MAGIC(524288 / 8, AT24_FLAG_ADDR16) },
+	{ .compatible = "at24,24c1024",	.data = (void *) AT24_DEVICE_MAGIC(1048576 / 8, AT24_FLAG_ADDR16) },
+	{ }
+};
+MODULE_DEVICE_TABLE(of, at24_of_match);
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 /*
@@ -690,6 +711,7 @@ static struct i2c_driver at24_driver = {
 	.driver = {
 		.name = "at24",
 		.owner = THIS_MODULE,
+		.of_match_table = of_match_ptr(at24_of_match),
 	},
 	.probe = at24_probe,
 	.remove = at24_remove,
