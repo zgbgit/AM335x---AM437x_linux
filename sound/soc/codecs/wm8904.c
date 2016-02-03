@@ -2135,12 +2135,12 @@ static int wm8904_i2c_probe(struct i2c_client *i2c,
 	if (wm8904 == NULL)
 		return -ENOMEM;
 
-	wm8904->mclk = devm_clk_get(&i2c->dev, "mclk");
+	/*wm8904->mclk = devm_clk_get(&i2c->dev, "mclk");
 	if (IS_ERR(wm8904->mclk)) {
 		ret = PTR_ERR(wm8904->mclk);
 		dev_err(&i2c->dev, "Failed to get MCLK\n");
 		return ret;
-	}
+	}*/
 
 	wm8904->regmap = devm_regmap_init_i2c(i2c, &wm8904_regmap);
 	if (IS_ERR(wm8904->regmap)) {
