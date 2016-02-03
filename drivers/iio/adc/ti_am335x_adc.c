@@ -40,6 +40,9 @@ struct tiadc_device {
 	u32 open_delay[8], sample_delay[8], step_avg[8];
 };
 
+static struct iio_dev *gp_iio_dev = NULL;
+static struct iio_chan_spec *gp_chan =NULL;
+
 static unsigned int tiadc_readl(struct tiadc_device *adc, unsigned int reg)
 {
 	return readl(adc->mfd_tscadc->tscadc_base + reg);
@@ -346,6 +349,7 @@ static int tiadc_channel_init(struct iio_dev *indio_dev, int channels)
 	}
 
 	indio_dev->channels = chan_array;
+	gp_chan = chan_array;
 
 	return 0;
 }
@@ -418,6 +422,91 @@ static int tiadc_read_raw(struct iio_dev *indio_dev,
 		return -EBUSY;
 	return IIO_VAL_INT;
 }
+
+static int tiadc_read_raw2(struct iio_dev *indio_dev,
+		struct iio_chan_spec const *chan,
+		int *val, int val2, int ch)
+{
+	struct tiadc_device *adc_dev = iio_priv(indio_dev);
+	int i, map_val;
+	unsigned int fifo1count, read, stepid;
+	bool found = false;
+	u32 step_en;
+	unsigned long timeout;
+
+	if (iio_buffer_enabled(indio_dev))
+		return -EBUSY;
+
+	step_en = 2 << ch;
+	if (!step_en)
+		return -EINVAL;
+
+	fifo1count = tiadc_readl(adc_dev, REG_FIFO1CNT);
+	while (fifo1count--)
+		tiadc_readl(adc_dev, REG_FIFO1);
+
+	am335x_tsc_se_set_once(adc_dev->mfd_tscadc, step_en);
+
+	timeout = jiffies + usecs_to_jiffies
+				(IDLE_TIMEOUT * adc_dev->channels);
+	/* Wait for Fifo threshold interrupt */
+	while (1) {
+		fifo1count = tiadc_readl(adc_dev, REG_FIFO1CNT);
+		if (fifo1count)
+			break;
+
+		if (time_after(jiffies, timeout)) {
+			am335x_tsc_se_adc_done(adc_dev->mfd_tscadc);
+			return -EAGAIN;
+		}
+	}
+	map_val = ch;//adc_dev->channel_step[chan->scan_index];
+
+	/*
+	 * We check the complete FIFO. We programmed just one entry but in case
+	 * something went wrong we left empty handed (-EAGAIN previously) and
+	 * then the value apeared somehow in the FIFO we would have two entries.
+	 * Therefore we read every item and keep only the latest version of the
+	 * requested channel.
+	 */
+	for (i = 0; i < fifo1count; i++) {
+		read = tiadc_readl(adc_dev, REG_FIFO1);
+		stepid = read & FIFOREAD_CHNLID_MASK;
+		stepid = stepid >> 0x10;
+
+		if (stepid == map_val) {
+			read = read & FIFOREAD_DATA_MASK;
+			found = true;
+			*val = (u16) read;
+		}
+	}
+	am335x_tsc_se_adc_done(adc_dev->mfd_tscadc);
+
+	if (found == false)
+		return -EBUSY;
+	return IIO_VAL_INT;
+}
+
+int get_adc_sample(int dev_id, int ch1)
+{
+	struct iio_dev *indio_dev;
+	struct iio_chan_spec *chan;
+	int val, ch, eer;
+
+	indio_dev = gp_iio_dev;
+	chan = gp_chan;
+	if (indio_dev == NULL)
+		return  -1;
+	if (chan == NULL)
+		return  -1;
+
+	ch = ch1 -4;
+	eer = tiadc_read_raw2(indio_dev, chan, &val, 0, ch);
+	if(eer == IIO_VAL_INT)
+		return  val;
+	return  -1;
+}
+
 
 static const struct iio_info tiadc_info = {
 	.read_raw = &tiadc_read_raw,
@@ -505,6 +594,7 @@ static int tiadc_probe(struct platform_device *pdev)
 		goto err_buffer_unregister;
 
 	platform_set_drvdata(pdev, indio_dev);
+	gp_iio_dev =indio_dev;
 
 	return 0;
 

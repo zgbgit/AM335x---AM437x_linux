@@ -200,6 +200,12 @@ config KEYBOARD_GPIO
 	  To compile this driver as a module, choose M here: the
 	  module will be called gpio_keys.
 
+config KEYBOARD_ADC
+	tristate "ADC Buttons"
+	help
+	  This driver implements support for buttons connected
+	  to ADC pins of various CPUs (and some other chips).
+
 config KEYBOARD_GPIO_POLLED
 	tristate "Polled GPIO buttons"
 	depends on GPIOLIB
