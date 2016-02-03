@@ -169,6 +169,18 @@
 			};
 		};
 	};
+
+	adc_keypad{
+		compatible = "embest, adc_keypad";
+		status = "okay";
+
+		key_name = "menu", "back";
+		key_num = <2>;
+		key_code = <KEY_MENU KEY_BACK>;
+		key_chan = <6 7>;
+		key_val = <0 0>; 
+		key_tolerance = <200 200>;
+	};
 };
 
 &cpu {
