@@ -419,6 +419,18 @@
 	rx-num-evt = <1>;
 };
 
+&tscadc {
+	status = "okay";
+
+	tsc {
+		ti,wires = <4>;
+		ti,x-plate-resistance = <200>;
+		ti,coordinate-readouts = <5>;
+		ti,wire-config = <0x00 0x11 0x22 0x33>;
+		ti,charge-delay = <0xf200>;
+	};
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
