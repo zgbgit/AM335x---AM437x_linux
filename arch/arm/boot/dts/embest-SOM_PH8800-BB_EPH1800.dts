@@ -252,6 +252,12 @@
 		reg = <0x68>;
 		status = "okay";
 	};
+
+	ch7033: ch7033@76 {
+		compatible = "chrontel,ch7033";
+		reg = <0x76>;
+		status = "okay";
+	};
 };
 
 &mmc1 {
