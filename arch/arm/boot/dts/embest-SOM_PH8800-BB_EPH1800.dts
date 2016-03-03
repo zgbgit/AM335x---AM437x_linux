@@ -511,6 +511,11 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart3_pins>;
 	status = "okay";
+	
+	rs485-rts-active-high;
+	linux,rs485-enabled-at-boot-time;
+	rs485-rts-delay = <200 0>;                // in milliseconds
+	rts-gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
 };
 
 &uart5 {
@@ -563,6 +568,7 @@
 		pinctrl-single,pins = <
 			0x228 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart3_rxd.uart3_rxd */
 			0x22c (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart3_txd.uart3_txd */
+			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart3_rts.gpio5_1   */
 		>;
 	};
     
