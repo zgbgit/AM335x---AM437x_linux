@@ -34,6 +34,27 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 	};
+
+	leds {
+		pinctrl-names = "default";
+		pinctrl-0 = <&user_leds>;
+
+		compatible = "gpio-leds";
+
+		led1 {
+			label = "user_leds_d2";
+			gpios = <&gpio2 0 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
+
+		led2 {
+			label = "user_leds_d3";
+			gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
+	};
 };
 
 &uart0 {
@@ -192,6 +213,13 @@
 			0x104 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x1A0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x160 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+		>;
+	};
+
+	user_leds: user_leds {
+		pinctrl-single,pins = <
+			0x088 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_csn3.gpio2_0 */
+			0x078 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ben1.gpio1_28 */
 		>;
 	};
 };
