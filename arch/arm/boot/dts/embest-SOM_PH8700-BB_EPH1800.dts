@@ -55,6 +55,13 @@
 			default-state = "on";
 		};
 	};
+
+	beeper {
+		pinctrl-names = "default";
+		pinctrl-0 = <&buzzer_pin>;
+		compatible = "gpio_buzzer";
+		gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &uart0 {
@@ -220,6 +227,12 @@
 		pinctrl-single,pins = <
 			0x088 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_csn3.gpio2_0 */
 			0x078 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ben1.gpio1_28 */
+		>;
+	};
+
+	buzzer_pin: buzzer_pin {
+		pinctrl-single,pins = <
+			0x074 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* GPMC_WPN.gpio0_31 MODE7 */
 		>;
 	};
 };
