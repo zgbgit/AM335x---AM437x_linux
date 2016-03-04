@@ -321,6 +321,18 @@
 	};
 };
 
+&dcan0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&can0_pins>;
+	status = "okay";
+};
+
+&dcan1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&can1_pins>;
+	status = "okay";
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
@@ -338,6 +350,22 @@
 		>;
 	};
 
+    /* CAN0 pins: rxd & txd */
+	can0_pins: pinmux_can0_pins {
+		pinctrl-single,pins = <
+			0x17C (PIN_INPUT_PULLUP | MUX_MODE2)	/* uart1_rtsn.can0_rxd */
+			0x178 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* uart1_ctsn.can0_txd */
+			0x78 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* CAN0/1_STB.gpio1_28 */
+		>;
+	};
+
+    /* CAN1 pins: rxd & txd */
+	can1_pins: pinmux_can1_pins {
+		pinctrl-single,pins = <
+			0x16C (PIN_INPUT_PULLUP | MUX_MODE2)	/* uart0_rtsn.can1_rxd */
+			0x168 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* uart0_ctsn.can1_txd */
+		>;
+	};
 	/* MMC1 pins:  data0 - data3; clk; cmd; detect pin */
 	mmc1_pins: pinmux_mmc1_pins {
 		pinctrl-single,pins = <
