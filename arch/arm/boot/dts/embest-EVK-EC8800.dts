@@ -262,6 +262,28 @@
 	ti,non-removable;
 };
 
+&usb2_phy1 {
+	status = "okay";
+};
+
+&usb1 {
+	dr_mode = "otg";
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb1_pins>;
+};
+
+&usb2_phy2 {
+	status = "okay";
+};
+
+&usb2 {
+	dr_mode = "host";
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb2_pins>;
+};
+
 &gpio0 {
 	status = "okay";
 };
@@ -517,6 +539,18 @@
 			0x0e8 (PIN_OUTPUT | MUX_MODE0)	/* DSS PCLK */
 			0x0ec (PIN_OUTPUT | MUX_MODE0)	/* DSS AC BIAS EN */
 
+		>;
+	};
+
+	usb1_pins: usb1_pins {
+		pinctrl-single,pins = <
+			0x2c0 (PIN_OUTPUT | MUX_MODE0) /* usb0_drvvbus.usb0_drvvbus */
+		>;
+	};
+
+	usb2_pins: usb2_pins {
+		pinctrl-single,pins = <
+			0x2c4 (PIN_OUTPUT | MUX_MODE0) /* usb1_drvvbus.usb1_drvvbus */
 		>;
 	};
 
