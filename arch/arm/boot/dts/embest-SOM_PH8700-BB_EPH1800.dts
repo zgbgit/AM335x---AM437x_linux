@@ -52,6 +52,13 @@
 	tps: tps@24 {
 		reg = <0x24>;
 	};
+
+	ds3231: ds3231@68 {
+		compatible = "maxim,ds3231";
+		reg = <0x68>;
+		status = "okay";
+	};
+
 };
 
 &mmc1 {
