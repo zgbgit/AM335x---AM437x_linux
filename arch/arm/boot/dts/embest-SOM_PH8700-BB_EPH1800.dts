@@ -62,6 +62,18 @@
 		compatible = "gpio_buzzer";
 		gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
 	};
+
+	adc_keypad{
+		compatible = "embest, adc_keypad";
+		status = "okay";
+
+		key_name = "menu", "back";
+		key_num = <2>;
+		key_code = <139 102>;
+		key_chan = <6 7>;
+		key_val = <0 0>; 
+		key_tolerance = <200 200>;
+	};
 };
 
 &uart0 {
