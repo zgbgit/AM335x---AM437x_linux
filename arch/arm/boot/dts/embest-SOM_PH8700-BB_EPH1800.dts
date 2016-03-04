@@ -72,6 +72,11 @@
 	status = "okay";
 };
 
+/* RTC */
+&rtc {
+	status = "okay";
+};
+
 /include/ "tps65217.dtsi"
 
 &tps {
