@@ -243,6 +243,12 @@
 	pinctrl-0 = <&emmc_pins_default>;
 };
 
+&dcan0 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&can0_pins>;
+		status = "okay";
+};
+
 /include/ "tps65217.dtsi"
 
 &tps {
@@ -427,5 +433,13 @@
 			0x80 (PIN_INPUT_PULLUP | MUX_MODE2) /* gpmc_csn1.mmc1_clk */
 			0x84 (PIN_INPUT_PULLUP | MUX_MODE2) /* gpmc_csn2.mmc1_cmd */
 		>;
+	};
+
+	/* CAN0 pins: rxd & txd */        
+	can0_pins: pinmux_can0_pins {
+				pinctrl-single,pins = <
+						0x17C (PIN_INPUT_PULLUP | MUX_MODE2)        /* uart1_rtsn.can0_rxd */
+						0x178 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)     /* uart1_ctsn.can0_txd */
+				>;
 	};
 };
