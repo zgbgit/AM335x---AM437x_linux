@@ -173,6 +173,10 @@
 		status = "okay";
 	};
 
+	eeprom: eeprom@50 {
+		compatible = "at24,24c32";
+		reg = <0x50>;
+	};
 };
 
 &mmc1 {
