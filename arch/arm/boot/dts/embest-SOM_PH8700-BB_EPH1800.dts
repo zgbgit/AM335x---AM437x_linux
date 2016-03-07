@@ -299,6 +299,41 @@
 	};
 };
 
+/* USB0:OTG USB1:HOST */
+&usb {
+	status = "okay";
+};
+
+&usb_ctrl_mod {
+	status = "okay";
+};
+
+&usb0_phy {
+	status = "okay";
+};
+
+&usb1_phy {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&usb0_pins_default>; 
+	dr_mode = "otg";
+};
+
+&usb1 {
+	status = "okay";
+	dr_mode = "host";
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&usb1_pins_default>; 
+};
+
+&cppi41dma  {
+	status = "okay";
+};
+
 /include/ "tps65217.dtsi"
 
 &tps {
@@ -530,5 +565,17 @@
 		pinctrl-single,pins = <
 			0x090 (PIN_INPUT | MUX_MODE7)	    /* gpmc_advn_ale.gpio2_2 */
 		>;
+	};
+
+	usb0_pins_default: pinmux_usb0_pins { 
+		pinctrl-single,pins = < 
+			0x21c (PIN_OUTPUT | MUX_MODE0) /* usb0_drvvbus.usb0_drvvbus */ 
+		>; 
+	}; 
+
+	usb1_pins_default: pinmux_usb1_pins { 
+		pinctrl-single,pins = < 
+			0x234 (PIN_OUTPUT | MUX_MODE0) /* usb1_drvvbus.usb1_drvvbus */ 
+		>; 
 	};
 };
