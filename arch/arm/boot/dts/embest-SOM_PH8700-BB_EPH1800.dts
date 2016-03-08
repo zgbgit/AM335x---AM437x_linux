@@ -160,6 +160,35 @@
 			};
 		};
 	};
+
+	sound {
+		compatible = "simple-audio-card";
+
+		simple-audio-card,name = "AM335x-PH8700";
+		simple-audio-card,widgets =
+						"Headphone", "Headphone Jack",
+						"Microphone", "Microphone Jack";
+		simple-audio-card,routing =
+						"Headphone Jack",        "HPOUTL",
+						"Headphone Jack",        "HPOUTR",
+						"Microphone Jack",  "MICBIAS", 
+						"IN1L", "Microphone Jack";
+		simple-audio-card,format = "dsp_b";
+		simple-audio-card,bitclock-master = <&sound_master>;
+		simple-audio-card,frame-master = <&sound_master>;
+		/*simple-audio-card,bitclock-inversion;*/
+		simple-audio-card,cpu {
+						sound-dai = <&mcasp0>;
+						system-clock-frequency = <24000000>;
+						system-clock-direction = "out";
+		};
+
+		sound_master: simple-audio-card,codec {
+						sound-dai = <&wm8904>;
+						system-clock-frequency = <24000000>;
+						system-clock-direction = "in";
+		};
+	};
 };
 
 &uart0 {
@@ -212,6 +241,20 @@
 		compatible = "chrontel,ch7033";
 		reg = <0x76>;
 		status = "okay";
+	};
+
+	wm8904: wm8904@1a {
+		#sound-dai-cells = <0>;
+		compatible = "wlf,wm8904";
+		reg = <0x1a>;
+		status = "okay";
+
+		/* Regulators */
+		AVDD-supply = <&ldo3_reg>;
+		DCVDD-supply = <&ldo3_reg>;
+		DBVDD-supply = <&ldo4_reg>;
+		CPVDD-supply = <&ldo3_reg>;
+		MICVDD-supply = <&ldo4_reg>;
 	};
 };
 
@@ -364,6 +407,24 @@
 	phy_id = <&davinci_mdio>, <6>;
 	phy-mode = "rgmii-txid";
 	dual_emac_res_vlan = <2>;
+};
+
+/*Audio*/
+&mcasp0 {
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mcasp0_pins>;
+
+	status = "okay";
+
+	op-mode = <0>;
+	tdm-slots = <2>;
+	serial-dir = <
+		1 2  0 0
+	>;
+
+	tx-num-evt = <1>;
+	rx-num-evt = <1>;
 };
 
 /include/ "tps65217.dtsi"
@@ -650,6 +711,17 @@
 			/* MDIO */
 			0x148 (PIN_INPUT_PULLUP | SLEWCTRL_FAST | MUX_MODE0)	/* mdio_data.mdio_data */
 			0x14c (PIN_OUTPUT_PULLUP | MUX_MODE0)			        /* mdio_clk.mdio_clk */
+		>;
+	};
+
+	/*AUDIO Pins*/
+	mcasp0_pins: mcasp0_pins {
+		pinctrl-single,pins = <
+			0x190 (PIN_INPUT_PULLDOWN | MUX_MODE0)        /* MCASP0_ACLKX.MCASP0_ACLKX */
+			0x194 (PIN_INPUT_PULLDOWN | MUX_MODE0)        /* MCASP0_FSX.MCASP0_FSX */
+			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)       /* MCASP0_AXR0.MCASP0_AXR0 */
+			0x1a8 (PIN_INPUT_PULLDOWN | MUX_MODE0)        /* MCASP0_AXR1.MCASP0_AXR1 */
+			0x1ac (PIN_OUTPUT_PULLDOWN | MUX_MODE0)       /* MCASP0_AHCLKX.MCASP0_AHCLKX */
 		>;
 	};
 };
