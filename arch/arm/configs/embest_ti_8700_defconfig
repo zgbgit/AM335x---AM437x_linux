@@ -2237,7 +2237,7 @@ CONFIG_I2C_OMAP=y
 #
 # Other I2C/SMBus bus drivers
 #
-# CONFIG_HDMI_VGA_CH7033 is not set
+CONFIG_HDMI_VGA_CH7033=y
 # CONFIG_I2C_STUB is not set
 # CONFIG_I2C_SLAVE is not set
 # CONFIG_I2C_DEBUG_CORE is not set
