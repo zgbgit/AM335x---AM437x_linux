@@ -489,6 +489,18 @@
 	};
 };
 
+&spi4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi4_pins>;
+	ti,pindir-d0-out-d1-in = <1>;
+	status = "okay";
+	spidev@0 {
+		spi-max-frequency = <24000000>;
+		reg = <0>;
+		compatible = "rohm,dh2228fv";
+        };
+};
+
 &dcan0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&can0_pins>;
@@ -803,6 +815,15 @@
 			0x264 (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi2_d0.spi2_d0 */
 			0x268 (PIN_INPUT_PULLUP | MUX_MODE0) /* spi2_d1.spi2_d1 */
 			0x26C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi2_cs0.spi2_cs0 */
+		>;
+	};
+
+	spi4_pins: pinmux_spi4_pins {
+		pinctrl-single,pins = <
+			0x250 (PIN_INPUT_PULLUP | MUX_MODE0)  /* spi4_sclk.spi4_sclk */
+			0x254 (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi4_d0.spi4_d0 */
+			0x258 (PIN_INPUT_PULLUP | MUX_MODE0)  /* spi4_d1.spi4_d1 */
+			0x25C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi4_cs0.spi4_cs0 */
 		>;
 	};
 
