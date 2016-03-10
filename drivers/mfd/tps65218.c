@@ -266,6 +266,10 @@ static int tps65218_probe(struct i2c_client *client,
 
         }
 
+        ret = tps65218_reg_read(tps, TPS65218_REG_CONTROL_DCDC4, &chipid);
+        chipid &= ~(TPS65218_CONTROL_DCDC4_PFM);
+        ret = tps65218_reg_write(tps, TPS65218_REG_CONTROL_DCDC4, chipid, TPS65218_PROTECT_L1);
+
 	ret = of_platform_populate(client->dev.of_node, NULL, NULL,
 				   &client->dev);
 	if (ret < 0)
