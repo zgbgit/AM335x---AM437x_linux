@@ -432,7 +432,9 @@ dtb-$(CONFIG_SOC_AM43XX) += \
 	am437x-idk-evm.dtb \
 	am437x-gp-evm.dtb \
 	am437x-gp-evm-hdmi.dtb \
-	embest-SOM_PH8800-BB_EPH1800.dtb\
+	embest-SOM_PH8800-BB_EPH1800-4.3inch_LCD.dtb\
+	embest-SOM_PH8800-BB_EPH1800-7inch_LCD.dtb\
+	embest-SOM_PH8800-BB_EPH1800-HDMI-VGA.dtb\
 	embest-EVK-EC8800.dtb
 dtb-$(CONFIG_SOC_OMAP5) += \
 	omap5-cm-t54.dtb \
