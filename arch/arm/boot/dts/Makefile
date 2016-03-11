@@ -415,7 +415,9 @@ dtb-$(CONFIG_SOC_AM33XX) += \
 	am335x-pepper.dtb \
 	am335x-lxm.dtb \
 	am335x-chiliboard.dtb\
-	embest-SOM_PH8700-BB_EPH1800.dtb
+	embest-SOM_PH8700-BB_EPH1800-4.3inch_LCD.dtb\
+	embest-SOM_PH8700-BB_EPH1800-7inch_LCD.dtb\
+	embest-SOM_PH8700-BB_EPH1800-HDMI-VGA.dtb
 dtb-$(CONFIG_ARCH_OMAP4) += \
 	omap4-duovero-parlor.dtb \
 	omap4-panda.dtb \

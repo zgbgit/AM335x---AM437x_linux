@@ -82,7 +82,7 @@
 		default-brightness-level = <8>;
 	};
 
-	panel {
+	lcd0: panel {
 		compatible = "ti,tilcdc,panel";
 		status = "okay";
 		panel-info {
@@ -131,7 +131,7 @@
 			};*/
 
 			/*This is the timing for HDMI&VGA*/
-			1024x768p62 {
+			/*1024x768p62 {
 				clock-frequency = <80000000>;
 				hactive = <1024>;
 				vactive = <768>;
@@ -145,7 +145,7 @@
 				vsync-active = <0>;
 				de-active = <1>;
 				pixelclk-active = <1>;
-			};
+			};*/
 		};
 	};
 
@@ -281,7 +281,7 @@
 		ti,wires = <4>;
 		ti,x-plate-resistance = <200>;
 		ti,coordinate-readouts = <5>;
-		ti,wire-config = <0x00 0x11 0x22 0x33>;
+		ti,wire-config = <0x10 0x01 0x22 0x33>;
 		ti,charge-delay = <0xf200>;
 	};
 
