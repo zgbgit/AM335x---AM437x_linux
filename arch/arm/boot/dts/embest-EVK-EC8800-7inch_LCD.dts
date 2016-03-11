@@ -1,0 +1,32 @@
+/*
+ * Copyright (C) 2015 Embest Technology Co., Ltd., - http://www.embest-tech.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This dts is for embest own product:
+ * EVK-EC8800
+ */
+/*/dts-v1/;*/
+
+#include "embest-EVK-EC8800.dts"
+
+&lcd0{
+	panel-timing {
+		/*This is the timing for 7inch_LCD*/
+		clock-frequency = <36000000>;
+		hactive = <800>;
+		vactive = <480>;
+		hfront-porch = <1>;
+		hback-porch = <1>;
+		hsync-len = <48>;
+		vfront-porch = <12>;
+		vback-porch = <25>;
+		vsync-len = <5>;
+		hsync-active = <0>;
+		vsync-active = <0>;
+		de-active = <1>;
+		pixelclk-active = <1>;
+	};
+};
