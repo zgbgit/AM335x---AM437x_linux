@@ -52,6 +52,12 @@
 			gpios = <&gpio4 14 GPIO_ACTIVE_HIGH>;
 			default-state = "on";
 	     	};
+
+		bt_en {
+			label = "ec8800:bt_en";
+			gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
 	};
 
 	backlight {
@@ -457,6 +463,9 @@
 		pinctrl-single,pins = <
 			0x108 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_col.uart5_rxd */
 			0x144 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* rmii1_refclk.uart5_txd */
+			0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* ctsn */
+			0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* rtsn */
+			0x1d0 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* BT_EN */
 		>;
 	};
 
