@@ -27,6 +27,19 @@
 		serial5 = &uart5;
 	};
 
+	wilink8_pcm: wilink8_pcm {
+		compatible = "ti,wilink8_bt";
+		status = "okay";
+	};
+
+	sound_bt: sound@1 {
+		compatible = "ti,wilink8-bt-audio";
+		ti,model = "WILINK8_BT";
+		ti,audio-codec = <&wilink8_pcm>;
+		ti,mcasp-controller = <&mcasp0>;
+		ti,codec-clock-rate = <24000000>;
+	};
+
 	leds {
 		pinctrl-names = "default";
 		pinctrl-0 = <&user_leds>;
@@ -52,6 +65,12 @@
 			gpios = <&gpio4 10 GPIO_ACTIVE_HIGH>;
 			default-state = "on";
 	     	};
+
+		bt_en {
+			label = "PH1800:bt_en";
+			gpios = <&gpio4 11 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
 	};
 
 	/* Generic GPIO buzzer device  as misc device */
@@ -133,6 +152,18 @@
 				remote-endpoint = <&dpi_out>;
 			};
 		};
+	};
+
+	kim {
+		compatible = "kim";		
+		nshutdown_gpio = <107>; 
+		dev_name = "/dev/ttyO5";
+		flow_cntrl = <1>;
+		baud_rate = <3000000>;
+	};
+
+	btwilink {
+		compatible = "btwilink";
 	};
 
 	sound {
@@ -628,6 +659,9 @@
 		pinctrl-single,pins = <
 			0x108 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_col.uart5_rxd */
 			0x144 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* rmii1_refclk.uart5_txd */
+			0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* ctsn */
+			0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* rtsn */
+			0x1dc (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* BT_EN */
 		>;
 	};
 
