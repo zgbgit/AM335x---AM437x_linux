@@ -46,6 +46,12 @@
 			linux,default-trigger = "none";
 			default-state = "on";
 		};
+
+		wifi_en {
+			label = "PH1800:wifi_en";
+			gpios = <&gpio4 10 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+	     	};
 	};
 
 	/* Generic GPIO buzzer device  as misc device */
@@ -355,6 +361,38 @@
 	pinctrl-1 = <&emmc_pins_sleep>;
 	ti,non-removable;
 };
+	
+&mmc3 {
+	status = "okay";
+	dmas = <&edma 30
+	&edma 31>;
+	dma-names = "tx", "rx";
+	vmmc-supply = <&dcdc4>;
+	bus-width = <4>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&mmc3_pins_default>;
+	pinctrl-1 = <&mmc3_pins_sleep>;
+	cap-power-off-card;
+	keep-power-in-suspend;
+	ti,non-removable;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	wlcore: wlcore@0 {
+		compatible = "ti,wl1835";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&wlan_pins_default>;
+		pinctrl-1 = <&wlan_pins_sleep>;
+		reg = <2>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <9 IRQ_TYPE_LEVEL_HIGH>;
+	};
+};
+
+&edma {
+	ti,edma-xbar-event-map = /bits/ 16 <1 30
+				2 31>;
+};
 
 &gpio0 {
 	status = "okay";
@@ -558,6 +596,7 @@
 	pinctrl-0 = <&usb2_pins>;
 };
 
+	
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
@@ -663,6 +702,42 @@
 			0x1c (PIN_INPUT_PULLDOWN | MUX_MODE7) /* gpmc_ad7.gpio1_7 */
 			0x80 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* gpmc_csn1.gpio1_30 */
 			0x84 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* gpmc_csn2.gpio1_31 */
+		>;
+	};
+
+	mmc3_pins_default: pinmux_mmc3_pins_default {  
+		pinctrl-single,pins = <
+			0x1f0 (PIN_INPUT_PULLUP | MUX_MODE3) /* (AD21) cam1_data2.mmc2_clk */
+			0x1f4 (PIN_INPUT_PULLUP | MUX_MODE3) /* (AE22) cam1_data3.mmc2_cmd */
+			0x1f8 (PIN_INPUT_PULLUP | MUX_MODE3) /* (AD22) cam1_data4.mmc2_dat0 */
+			0x1fc (PIN_INPUT_PULLUP | MUX_MODE3) /* (AE23) cam1_data5.mmc2_dat1 */
+			0x200 (PIN_INPUT_PULLUP | MUX_MODE3) /* (AD23) cam1_data6.mmc2_dat2 */
+			0x204 (PIN_INPUT_PULLUP | MUX_MODE3) /* (AE24) cam1_data7.mmc2_dat3 */
+		>;
+	};
+
+	mmc3_pins_sleep: pinmux_mmc3_pins_sleep {
+		pinctrl-single,pins = <
+			0x1f0 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* (AD21) cam1_data2.mmc2_clk */
+			0x1f4 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* (AE22) cam1_data3.mmc2_cmd */
+			0x1f8 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* (AD22) cam1_data4.mmc2_dat0 */
+			0x1fc (PIN_INPUT_PULLDOWN | MUX_MODE7) /* (AE23) cam1_data5.mmc2_dat1 */
+			0x200 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* (AD23) cam1_data6.mmc2_dat2 */
+			0x204 (PIN_INPUT_PULLDOWN | MUX_MODE7) /* (AE24) cam1_data7.mmc2_dat3 */
+		>;
+	};
+
+	wlan_pins_default: pinmux_wlan_pins_default {
+		pinctrl-single,pins = <
+			0x1d8 (PIN_OUTPUT_PULLUP | MUX_MODE7)		/*  WL_EN */
+			0x1d4 (PIN_INPUT | WAKEUP_ENABLE | MUX_MODE7)	/*  WL_IRQ */
+		>;
+	};
+
+	wlan_pins_sleep: pinmux_wlan_pins_sleep {
+		pinctrl-single,pins = <
+			0x1d8 (PIN_OUTPUT_PULLUP | MUX_MODE7)		/* WL_EN */
+			0x1d4 (PIN_INPUT | WAKEUP_ENABLE | MUX_MODE7)	/* WL_IRQ */
 		>;
 	};
 
