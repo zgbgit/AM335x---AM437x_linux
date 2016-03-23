@@ -189,6 +189,12 @@
 						system-clock-direction = "in";
 		};
 	};
+
+	hdmi {
+		compatible = "ti,tilcdc,slave";
+		i2c = <&i2c0>;
+		status = "okay";
+	};
 };
 
 &uart0 {
