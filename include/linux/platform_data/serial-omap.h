@@ -28,7 +28,7 @@
  * in bootargs we specify as console=ttyO0 if uart1
  * is used as console uart.
  */
-#define OMAP_SERIAL_NAME	"ttyO"
+#define OMAP_SERIAL_NAME	"ttyS"
 
 struct omap_uart_port_info {
 	bool			dma_enabled;	/* To specify DMA Mode */
