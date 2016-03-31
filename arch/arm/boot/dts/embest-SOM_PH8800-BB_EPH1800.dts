@@ -570,6 +570,25 @@
         };
 };
 
+&qspi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&qspi_pins>;
+	spi-max-frequency = <108000000>;
+	status = "okay";
+
+	/*m25p80@0 {
+		compatible = "n25q256a";
+		spi-max-frequency = <108000000>;
+		reg = <0>;
+		spi-cpol;
+		spi-cpha;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};*/
+};
+
 &dcan0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&can0_pins>;
@@ -933,6 +952,17 @@
 			0x254 (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi4_d0.spi4_d0 */
 			0x258 (PIN_INPUT_PULLUP | MUX_MODE0)  /* spi4_d1.spi4_d1 */
 			0x25C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi4_cs0.spi4_cs0 */
+		>;
+	};
+
+	qspi_pins: pinmux_qspi_pins {
+		pinctrl-single,pins = <
+			0x7c (PIN_OUTPUT | MUX_MODE3)   /* gpmc_csn0.qspi_csn */
+			0x88 (PIN_OUTPUT | MUX_MODE2)   /* gpmc_csn3.qspi_clk */
+			0x90 (PIN_INPUT | MUX_MODE3)    /* gpmc_advn_ale.qspi_d0 */
+			0x94 (PIN_INPUT | MUX_MODE3)    /* gpmc_oen_ren.qspi_d1 */
+			0x98 (PIN_INPUT | MUX_MODE3)    /* gpmc_wen.qspi_d2 */
+			0x9c (PIN_INPUT | MUX_MODE3)    /* gpmc_be0n_cle.qspi_d3 */
 		>;
 	};
 
