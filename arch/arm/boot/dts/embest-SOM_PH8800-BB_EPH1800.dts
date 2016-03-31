@@ -60,17 +60,21 @@
 			default-state = "on";
 		};
 
-		wifi_en {
-			label = "PH1800:wifi_en";
-			gpios = <&gpio4 10 GPIO_ACTIVE_HIGH>;
-			default-state = "on";
-	     	};
-
 		bt_en {
 			label = "PH1800:bt_en";
 			gpios = <&gpio4 11 GPIO_ACTIVE_HIGH>;
 			default-state = "on";
 		};
+	};
+
+	wlan_en_reg: fixedregulator@2 {
+		compatible = "regulator-fixed";
+		regulator-name = "wlan-en-regulator";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		/* WLAN_EN GPIO for this board - Bank1, pin16 */
+		gpio = <&gpio4 10 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
 	};
 
 	/* Generic GPIO buzzer device  as misc device */
@@ -398,7 +402,7 @@
 	dmas = <&edma 30
 	&edma 31>;
 	dma-names = "tx", "rx";
-	vmmc-supply = <&dcdc4>;
+	vmmc-supply = <&wlan_en_reg>;
 	bus-width = <4>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mmc3_pins_default>;
