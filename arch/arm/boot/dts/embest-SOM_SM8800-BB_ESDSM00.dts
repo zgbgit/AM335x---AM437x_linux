@@ -52,6 +52,20 @@
 		compatible = "gpio_buzzer";
 		gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
 	};
+
+	gpio_keys: gpio_keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio_keys_pins_default>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		switch@0 {
+			label = "recovery-button";
+			linux,code = <KEY_POWER>;
+			gpios = <&gpio1 28 GPIO_ACTIVE_LOW>;
+		};
+	};
 };
 
 &cpu {
@@ -177,6 +191,10 @@
 	status = "okay";
 };
 	
+&gpio1 {
+	status = "okay";
+};
+
 /* This is needed for LED according to LED pins */
 &gpio5 {
 	status = "okay";
@@ -241,6 +259,12 @@
 	buzzer_pin: buzzer_pin {
 		pinctrl-single,pins = <
 			0x08c (PIN_OUTPUT | MUX_MODE9)	/* gpmc_clk.gpio0_4 */
+		>;
+	};
+
+	gpio_keys_pins_default: gpio_keys_pins_default {
+		pinctrl-single,pins = <
+			0x078 (PIN_INPUT | MUX_MODE7)	/*gpmc_be1n.gpio1_28 */
 		>;
 	};
 };
