@@ -23,6 +23,27 @@
 	aliases {
 
 	};
+
+	leds {
+		pinctrl-names = "default";
+		pinctrl-0 = <&user_leds>;
+
+		compatible = "gpio-leds";
+
+		led1 {
+			label = "system_leds_d4";
+			gpios = <&gpio5 12 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
+
+		led2 {
+			label = "user_leds_d3";
+			gpios = <&gpio5 10 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
+	};
 };
 
 &cpu {
@@ -148,6 +169,11 @@
 	status = "okay";
 };
 	
+/* This is needed for LED according to LED pins */
+&gpio5 {
+	status = "okay";
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
@@ -189,6 +215,13 @@
 			0x104 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x1A0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x160 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+		>;
+	};
+
+	user_leds: user_leds {
+		pinctrl-single,pins = <
+			0x240 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_csn3.gpio5_10 */			
+			0x248 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_ben1.gpio5_12 */		
 		>;
 	};
 };
