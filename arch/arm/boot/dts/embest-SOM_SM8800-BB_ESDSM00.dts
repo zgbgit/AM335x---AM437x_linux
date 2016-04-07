@@ -44,6 +44,14 @@
 			default-state = "on";
 		};
 	};
+
+	/* Generic GPIO buzzer device  as misc device */
+	buzzer {
+		pinctrl-names = "default";
+		pinctrl-0 = <&buzzer_pin>;
+		compatible = "gpio_buzzer";
+		gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &cpu {
@@ -222,6 +230,12 @@
 		pinctrl-single,pins = <
 			0x240 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_csn3.gpio5_10 */			
 			0x248 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_ben1.gpio5_12 */		
+		>;
+	};
+
+	buzzer_pin: buzzer_pin {
+		pinctrl-single,pins = <
+			0x08c (PIN_OUTPUT | MUX_MODE9)	/* gpmc_clk.gpio0_4 */
 		>;
 	};
 };
