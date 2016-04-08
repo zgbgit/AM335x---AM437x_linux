@@ -221,6 +221,17 @@
 	ext-clk-src;
 };
 
+&tscadc {
+	status = "okay";
+
+	adc {
+		ti,adc-channels = <0 1 2 3 4 5 6 7>;
+		ti,chan-step-opendelay = <0x98 0x98 0x98 0x98 0x098 0x98 0x098 0x0>;
+		ti,chan-step-sampledelay = <0x0f 0x0f 0x0f 0x0f 0x0f 0x0 0xf 0x0>;
+		ti,chan-step-avg = <8 8 8 8 8 2 4 8>;
+	};
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
