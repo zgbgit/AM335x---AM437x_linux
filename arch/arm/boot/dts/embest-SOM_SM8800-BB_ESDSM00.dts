@@ -21,7 +21,9 @@
 	compatible = "ti,am437x-sk-evm","ti,am4372","ti,am43";
 
 	aliases {
-
+		serial1 = &uart1;
+		serial3 = &uart3;
+		serial5 = &uart5;
 	};
 
 	leds {
@@ -76,6 +78,29 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_pins>;
+};
+
+&uart1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_pins>;
+	status = "okay";
+
+	rs485-rts-active-high;
+	linux,rs485-enabled-at-boot-time;
+	rs485-rts-delay = <200 0>;                // in milliseconds
+	rts-gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
+};
+
+&uart5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart5_pins>;
+	status = "okay";
 };
 
 &i2c0 {
@@ -238,6 +263,34 @@
 		pinctrl-single,pins = <
 			0x170 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart0_rxd.uart0_rxd */
 			0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart0_txd.uart0_txd */
+		>;
+	};
+	
+	/* UART1 pins: rxd & txd */
+	uart1_pins: pinmux_uart1_pins {
+		pinctrl-single,pins = <
+			0x180 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart1_rxd.uart1_rxd */
+			0x184 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart1_txd.uart1_txd */
+		>;
+	};
+
+	/* UART3 pins: rxd & txd */
+	uart3_pins: pinmux_uart3_pins {
+		pinctrl-single,pins = <
+			0x228 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart3_rxd.uart3_rxd */
+			0x22c (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart3_txd.uart3_txd */
+			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart3_rts.gpio5_1   */
+		>;
+	};
+
+	/* UART5 pins: rxd & txd */
+	uart5_pins: pinmux_uart5_pins {
+		pinctrl-single,pins = <
+			0x108 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_col.uart5_rxd */
+			0x144 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* rmii1_refclk.uart5_txd */
+			//0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* ctsn */
+			//0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* rtsn */
+			//0x1dc (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* BT_EN */
 		>;
 	};
 
