@@ -103,6 +103,28 @@
 	status = "okay";
 };
 
+&usb2_phy1 {
+	status = "okay";
+};
+
+&usb1 {
+	dr_mode = "otg";
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb1_pins>;
+};
+
+&usb2_phy2 {
+	status = "okay";
+};
+
+&usb2 {
+	dr_mode = "host";
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb2_pins>;
+};
+
 &i2c0 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -294,6 +316,18 @@
 		>;
 	};
 
+	usb1_pins: usb1_pins {
+		pinctrl-single,pins = <
+			0x2c0 (PIN_OUTPUT | MUX_MODE0) /* usb0_drvvbus.usb0_drvvbus */
+		>;
+	};
+
+	usb2_pins: usb2_pins {
+		pinctrl-single,pins = <
+			0x2c4 (PIN_OUTPUT | MUX_MODE0) /* usb1_drvvbus.usb1_drvvbus */
+		>;
+	};	
+	
 	/* I2C0 pins: sda & scl */
 	i2c0_pins: i2c0_pins {
 		pinctrl-single,pins = <
