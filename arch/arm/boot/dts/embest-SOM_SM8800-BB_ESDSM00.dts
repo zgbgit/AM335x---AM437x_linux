@@ -221,6 +221,18 @@
 			interrupts = <3 IRQ_TYPE_EDGE_BOTH>;
 		};
 	};
+
+	at24@50 {
+		compatible = "at24,24c256";
+		pagesize = <64>;
+		reg = <0x50>;
+	};
+
+	at24@57 {
+		compatible = "at24,24c256";
+		pagesize = <64>;
+		reg = <0x57>;
+	};
 };
 
 &mmc1 {
