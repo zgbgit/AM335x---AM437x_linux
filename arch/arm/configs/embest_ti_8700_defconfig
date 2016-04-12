@@ -3443,7 +3443,7 @@ CONFIG_HID=y
 # CONFIG_HID_BATTERY_STRENGTH is not set
 # CONFIG_HIDRAW is not set
 # CONFIG_UHID is not set
-CONFIG_HID_GENERIC=m
+CONFIG_HID_GENERIC=y
 
 #
 # Special HID drivers
@@ -3521,8 +3521,8 @@ CONFIG_USB_HIDDEV=y
 #
 # USB HID Boot Protocol drivers
 #
-CONFIG_USB_KBD=m
-CONFIG_USB_MOUSE=m
+CONFIG_USB_KBD=y
+CONFIG_USB_MOUSE=y
 
 #
 # I2C HID support
