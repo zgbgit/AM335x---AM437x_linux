@@ -145,6 +145,7 @@
 	rs485-rts-delay = <200 0>;		// in milliseconds	
 	status = "okay";
 	rts-gpio = <&gpio5 1 GPIO_ACTIVE_HIGH>;
+	cts-gpio = <&gpio5 0 GPIO_ACTIVE_HIGH>;
 };
 &uart5 {
 	pinctrl-names = "default";
