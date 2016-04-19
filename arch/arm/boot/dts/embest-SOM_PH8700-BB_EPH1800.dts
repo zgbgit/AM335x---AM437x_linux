@@ -75,7 +75,7 @@
 		key_tolerance = <200 200>;
 	};
 
-	backlight {
+	backlight: backlight {
 		compatible = "pwm-backlight";
 		pwms = <&ecap0 0 50000 0>;
 		brightness-levels = <0 51 53 56 62 75 101 152 255>;
@@ -85,6 +85,7 @@
 	lcd0: panel {
 		compatible = "ti,tilcdc,panel";
 		status = "okay";
+		backlight = <&backlight>;
 		panel-info {
 			ac-bias           = <255>;
 			ac-bias-intrpt    = <0>;
