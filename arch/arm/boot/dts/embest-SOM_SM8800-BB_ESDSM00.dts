@@ -68,6 +68,35 @@
 			gpios = <&gpio1 28 GPIO_ACTIVE_LOW>;
 		};
 	};
+	
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "AM437x-SM8800";
+		simple-audio-card,widgets =
+			"Headphone", "Headphone Jack",
+			"Microphone", "Microphone Jack";
+		simple-audio-card,routing =
+			"Headphone Jack",	"HPOUTL",
+			"Headphone Jack",	"HPOUTR",
+			"Microphone Jack",  "MICBIAS", 
+			"IN1L", "Microphone Jack";
+		simple-audio-card,format = "dsp_b";
+		simple-audio-card,bitclock-master = <&sound_master>;
+		simple-audio-card,frame-master = <&sound_master>;
+		/*simple-audio-card,bitclock-inversion;*/
+
+		simple-audio-card,cpu {
+			sound-dai = <&mcasp0>;
+			system-clock-frequency = <24000000>;
+			system-clock-direction = "out";
+		};
+
+		sound_master: simple-audio-card,codec {
+			sound-dai = <&wm8904>;
+			system-clock-frequency = <24000000>;
+			system-clock-direction = "in";
+		};
+	};
 };
 
 &cpu {
@@ -245,6 +274,20 @@
 		pagesize = <64>;
 		reg = <0x57>;
 	};
+	
+	wm8904: wm8904@1a {
+		#sound-dai-cells = <0>;
+		compatible = "wlf,wm8904";
+		reg = <0x1a>;
+		status = "okay";
+
+		/* Regulators */
+		AVDD-supply = <&ldo1>;
+		DCVDD-supply = <&ldo1>;
+		DBVDD-supply = <&ldo1>;
+		CPVDD-supply = <&ldo1>;
+		MICVDD-supply = <&dcdc4>;
+	};
 };
 
 &i2c1 {
@@ -360,6 +403,22 @@
 		
 		vcc-supply = <&dcdc4>;
 	};
+};
+
+&mcasp0 {
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mcasp0_pins>;
+	status = "okay";
+	op-mode = <0>;
+	tdm-slots = <2>;
+    
+	serial-dir = <
+		1 0  2 0
+	>;
+
+	tx-num-evt = <1>;
+	rx-num-evt = <1>;
 };
 
 &am43xx_pinmux {
@@ -572,6 +631,16 @@
 	tsc2046_irq_pins: tsc2046_irq_pins{
 		pinctrl-single,pins = <
 			0x48 (PIN_INPUT | MUX_MODE7)	    /* gpmc_a2.gpio1_18 */
+		>;
+	};
+	
+	mcasp0_pins: mcasp0_pins {
+		pinctrl-single,pins = <
+			0x270 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* xdma_event_intr0.clkout1 */
+			0x194 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_fsx.mcasp0_fsx */
+			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_axr0.mcasp0_axr0 */
+			0x19c (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mcasp0_ahclkr.mcasp0_axr2  */
+			0x190 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_aclkx.mcasp0_aclkx */
 		>;
 	};
 };
