@@ -97,6 +97,14 @@
 			system-clock-direction = "in";
 		};
 	};
+	
+	backlight {
+		compatible = "pwm-backlight";
+
+		pwms = <&ecap0 0 50000 PWM_POLARITY_INVERTED>;
+		brightness-levels = <0 51 53 56 62 75 101 152 255>;
+		default-brightness-level = <6>;
+	};
 };
 
 &cpu {
@@ -421,6 +429,18 @@
 	rx-num-evt = <1>;
 };
 
+/* This is needed for backlight */
+&epwmss0 {
+	status = "okay";
+};
+
+/* This is needed for backlight */
+&ecap0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&ecap0_pins>;
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
@@ -641,6 +661,12 @@
 			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_axr0.mcasp0_axr0 */
 			0x19c (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mcasp0_ahclkr.mcasp0_axr2  */
 			0x190 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_aclkx.mcasp0_aclkx */
+		>;
+	};
+	
+	ecap0_pins: backlight_pins {
+		pinctrl-single,pins = <
+			0x164 (PIN_OUTPUT | MUX_MODE0) /* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
 		>;
 	};
 };
