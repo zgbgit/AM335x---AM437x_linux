@@ -441,6 +441,25 @@
 	pinctrl-0 = <&ecap0_pins>;
 };
 
+&spi2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi2_pins>;
+	ti,pindir-d0-out-d1-in = <1>;
+	status = "okay";
+
+	m25p32@0 {
+		compatible = "m25p32";
+		spi-max-frequency = <108000000>;
+		reg = <0>;
+		spi-cpol;
+		spi-cpha;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
@@ -667,6 +686,15 @@
 	ecap0_pins: backlight_pins {
 		pinctrl-single,pins = <
 			0x164 (PIN_OUTPUT | MUX_MODE0) /* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
+		>;
+	};
+	
+	spi2_pins: pinmux_spi2_pins {
+		pinctrl-single,pins = <
+			0x260 (PIN_INPUT_PULLUP | MUX_MODE0) /* spi2_sclk.spi2_sclk */
+			0x264 (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi2_d0.spi2_d0 */
+			0x268 (PIN_INPUT_PULLUP | MUX_MODE0) /* spi2_d1.spi2_d1 */
+			0x26C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi2_cs0.spi2_cs0 */
 		>;
 	};
 };
