@@ -72,7 +72,7 @@
 		key_code = <139 102>;
 		key_chan = <6 7>;
 		key_val = <0 0>; 
-		key_tolerance = <200 200>;
+		key_tolerance = <500 500>;
 	};
 
 	backlight: backlight {
