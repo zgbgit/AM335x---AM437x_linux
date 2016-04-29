@@ -64,12 +64,37 @@
 		enable-active-high;
 	};
 
+	wilink8_pcm: wilink8_pcm {
+		compatible = "ti,wilink8_bt";
+		status = "okay";
+	};
+
+	sound_bt: sound@1 {
+		compatible = "ti,wilink8-bt-audio";
+		ti,model = "WILINK8_BT";
+		ti,audio-codec = <&wilink8_pcm>;
+		ti,mcasp-controller = <&mcasp0>;
+		ti,codec-clock-rate = <24000000>;
+	};
+
+	tibt {
+		compatible = "tibt";
+		nshutdown_gpio = <104>; 
+		dev_name = "/dev/ttyS5";
+		flow_cntrl = <1>;
+		baud_rate = <3000000>;
+	};
+
 	backlight {
 		compatible = "pwm-backlight";
 
 		pwms = <&ecap0 0 50000 PWM_POLARITY_INVERTED>;
 		brightness-levels = <0 51 53 56 62 75 101 152 255>;
 		default-brightness-level = <6>;
+	};
+	
+	btwilink {
+		compatible = "btwilink";
 	};
 
 	lcd0: display {
@@ -387,6 +412,21 @@
 	status = "okay";
 };
 
+&mcasp0 {
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mcasp0_pins>;
+	status = "okay";
+	op-mode = <0>;
+	tdm-slots = <2>;
+    
+	serial-dir = <
+		1 2  0 0
+	>;
+
+	tx-num-evt = <1>;
+	rx-num-evt = <1>;
+};
 
 &mac {
 	pinctrl-names = "default", "sleep";
@@ -517,6 +557,17 @@
 			0x168 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* uart0_ctsn.can1_txd */
 		>;
 	};
+
+	mcasp0_pins: mcasp0_pins {
+		pinctrl-single,pins = <
+			0x190 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_ACLKX.MCASP0_ACLKX */
+			0x194 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_FSX.MCASP0_FSX */
+			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AXR0.MCASP0_AXR0 */
+			0x1a8 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AXR1.MCASP0_AXR1 */
+			0x1ac (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AHCLKX.MCASP0_AHCLKX */
+		>;
+	};
+
 	/* MMC1 pins:  data0 - data3; clk; cmd; detect pin */
 	mmc1_pins: pinmux_mmc1_pins {
 		pinctrl-single,pins = <
