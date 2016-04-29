@@ -15,6 +15,8 @@
 #include <linux/slab.h>
 #include <linux/of.h>
 #include <linux/of_gpio.h>
+#include <linux/backlight.h>
+#include <linux/io.h>
 
 #include <video/omapdss.h>
 #include <video/omap-panel-data.h>
@@ -30,6 +32,7 @@ struct panel_drv_data {
 
 	/* used for non-DT boot, to be removed */
 	int backlight_gpio;
+	struct backlight_device *backlight;
 
 	struct gpio_desc *enable_gpio;
 };
@@ -68,6 +71,7 @@ static int panel_dpi_enable(struct omap_dss_device *dssdev)
 	struct panel_drv_data *ddata = to_panel_data(dssdev);
 	struct omap_dss_device *in = ddata->in;
 	int r;
+	void __iomem *reg;
 
 	if (!omapdss_device_is_connected(dssdev))
 		return -ENODEV;
@@ -86,8 +90,19 @@ static int panel_dpi_enable(struct omap_dss_device *dssdev)
 	if (ddata->enable_gpio)
 		gpiod_set_value_cansleep(ddata->enable_gpio, 1);
 
-	if (gpio_is_valid(ddata->backlight_gpio))
+	if (gpio_is_valid(ddata->backlight_gpio)) {
+		if (ddata->backlight) {
+			reg = ioremap(0x44E10800, 0x200);
+			reg += 0x164;
+			writel(0, reg);
+		}
 		gpio_set_value_cansleep(ddata->backlight_gpio, 1);
+	}
+
+	if (ddata->backlight) {
+		ddata->backlight->props.power = FB_BLANK_UNBLANK;
+		backlight_update_status(ddata->backlight);
+	}
 
 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
 
@@ -98,6 +113,7 @@ static void panel_dpi_disable(struct omap_dss_device *dssdev)
 {
 	struct panel_drv_data *ddata = to_panel_data(dssdev);
 	struct omap_dss_device *in = ddata->in;
+	void __iomem *reg;
 
 	if (!omapdss_device_is_enabled(dssdev))
 		return;
@@ -105,8 +121,19 @@ static void panel_dpi_disable(struct omap_dss_device *dssdev)
 	if (ddata->enable_gpio)
 		gpiod_set_value_cansleep(ddata->enable_gpio, 0);
 
-	if (gpio_is_valid(ddata->backlight_gpio))
+	if (gpio_is_valid(ddata->backlight_gpio)){
+		if (ddata->backlight) {
+			reg = ioremap(0x44E10800, 0x200);
+			reg += 0x164;
+			writel(7, reg);
+		}
 		gpio_set_value_cansleep(ddata->backlight_gpio, 0);
+	}
+
+	if (ddata->backlight) {
+		ddata->backlight->props.power = FB_BLANK_POWERDOWN;
+		backlight_update_status(ddata->backlight);
+	}
 
 	in->ops.dpi->disable(in);
 
@@ -202,7 +229,7 @@ err_gpio:
 static int panel_dpi_probe_of(struct platform_device *pdev)
 {
 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-	struct device_node *node = pdev->dev.of_node;
+	struct device_node *bl_node, *node = pdev->dev.of_node;
 	struct omap_dss_device *in;
 	int r;
 	struct display_timing timing;
@@ -214,8 +241,22 @@ static int panel_dpi_probe_of(struct platform_device *pdev)
 		return PTR_ERR(gpio);
 
 	ddata->enable_gpio = gpio;
+	
+	r = of_property_read_u32(node, "backlight_gpio", &(ddata->backlight_gpio));
 
-	ddata->backlight_gpio = -ENOENT;
+	if(r != 0)
+		ddata->backlight_gpio = -ENOENT;
+
+	bl_node = of_parse_phandle(node, "backlight", 0);
+	if (bl_node) {
+		ddata->backlight = of_find_backlight_by_node(bl_node);
+		of_node_put(bl_node);
+
+		if (!ddata->backlight)
+			return -EPROBE_DEFER;
+
+		dev_info(&pdev->dev, "found backlight\n");
+	}
 
 	r = of_get_display_timing(node, "panel-timing", &timing);
 	if (r) {
