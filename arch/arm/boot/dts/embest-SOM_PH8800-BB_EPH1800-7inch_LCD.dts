@@ -12,7 +12,17 @@
 
 #include "embest-SOM_PH8800-BB_EPH1800.dts"
 
+&backlight {
+	compatible = "pwm-backlight";
+
+	pwms = <&ecap0 0 50000 0>;
+	brightness-levels = <0 1 60 90 120 150 180 210 255>;
+	default-brightness-level = <6>;
+};
+
 &lcd0{
+	backlight = <&backlight>;
+	backlight_gpio = <7>;
 	panel-timing {
 		/*This is the timing for 7inch_LCD*/
 		clock-frequency = <36000000>;
