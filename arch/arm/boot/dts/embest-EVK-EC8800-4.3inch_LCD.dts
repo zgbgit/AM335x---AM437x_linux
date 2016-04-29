@@ -12,7 +12,16 @@
 
 #include "embest-EVK-EC8800.dts"
 
+&backlight {
+	compatible = "pwm-backlight";
+
+	pwms = <&ecap0 0 50000 0>;
+	brightness-levels = <0 30 60 90 120 150 180 210 255>;
+	default-brightness-level = <6>;
+};
+
 &lcd0{
+	backlight = <&backlight>;
 	panel-timing {
 		/*This is the timing for 4.3inch lcd*/
 		clock-frequency = <9000000>;
