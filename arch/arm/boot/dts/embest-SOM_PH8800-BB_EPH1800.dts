@@ -86,7 +86,7 @@
 		gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
 	};
 	
-	backlight {
+	backlight: backlight {
 		compatible = "pwm-backlight";
 
 		pwms = <&ecap0 0 50000 PWM_POLARITY_INVERTED>;
@@ -814,7 +814,7 @@
 
 	ecap0_pins: backlight_pins {
 		pinctrl-single,pins = <
-			0x164 (PIN_OUTPUT | MUX_MODE0) /* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
+			0x164 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
 		>;
 	};
 
