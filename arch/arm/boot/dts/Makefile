@@ -438,6 +438,8 @@ dtb-$(CONFIG_SOC_AM43XX) += \
 	embest-SOM_PH8800-BB_EPH1800-4.3inch_LCD.dtb\
 	embest-SOM_PH8800-BB_EPH1800-7inch_LCD.dtb\
 	embest-SOM_PH8800-BB_EPH1800-HDMI-VGA.dtb\
+	embest-SOM_PH8800-BB_SPH1800-4.3inch_LCD.dtb\
+	embest-SOM_PH8800-BB_SPH1800-7inch_LCD.dtb\
 	embest-EVK-EC8800-4.3inch_LCD.dtb\
 	embest-EVK-EC8800-7inch_LCD.dtb
 dtb-$(CONFIG_SOC_OMAP5) += \
