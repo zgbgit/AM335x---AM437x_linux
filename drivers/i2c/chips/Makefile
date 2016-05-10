@@ -12,6 +12,7 @@
 
 
 obj-$(CONFIG_HDMI_VGA_CH7033)	+= ch7033.o
+obj-$(CONFIG_VGA_CH7026)	+= ch7026.o
 
 ccflags-$(CONFIG_I2C_DEBUG_ALGO) := -DDEBUG
 

@@ -12,5 +12,11 @@ config HDMI_VGA_CH7033
         depends on I2C
         help
          say yes to support VGA CH7033 CHIP.
+	 
+config VGA_CH7026
+        tristate "VGA CH7026 CHIP"
+        depends on I2C
+        help
+         say yes to support VGA CH7026 CHIP.
 
 #endmenu
