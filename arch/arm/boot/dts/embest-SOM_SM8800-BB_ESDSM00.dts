@@ -21,6 +21,7 @@
 	compatible = "ti,am437x-sk-evm","ti,am4372","ti,am43";
 
 	aliases {
+		display0 = &lcd0;
 		serial1 = &uart1;
 		serial3 = &uart3;
 		serial5 = &uart5;
@@ -105,12 +106,93 @@
 		brightness-levels = <0 51 53 56 62 75 101 152 255>;
 		default-brightness-level = <6>;
 	};
+	lcd0: display {
+		compatible = "newhaven,nhd-4.3-480272ef-atxl", "panel-dpi";
+		label = "lcd";
+
+		/* If there is a enable pin in LCD sch. you need to add this!
+		*pinctrl-names = "default";
+		*pinctrl-0 = <&lcd_pins>;
+		*
+		*enable-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>; */
+
+		panel-timing {
+			/*This is the timing for HDMI&VGA*/
+			/*clock-frequency = <80000000>;
+			hactive = <1024>;
+			vactive = <768>;
+			hfront-porch = <18>;
+			hback-porch = <297>;
+			hsync-len = <53>;
+			vfront-porch = <3>;
+			vback-porch = <35>;
+			vsync-len = <6>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <1>;*/
+
+			/*This is the timing for 4.3inch_LCD*/
+			clock-frequency = <9000000>;
+			hactive = <480>;
+			vactive = <272>;
+			hfront-porch = <2>;
+			hback-porch = <43>;
+			hsync-len = <41>;
+			vfront-porch = <2>;
+			vback-porch = <12>;
+			vsync-len = <10>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <1>;
+
+			/*This is the timing for 7inch_LCD*/
+			/*clock-frequency = <9000000>;
+			hactive = <320>;
+			vactive = <240>;
+			hfront-porch = <64>;
+			hback-porch = <10>;
+			hsync-len = <16>;
+			vfront-porch = <32>;
+			vback-porch = <10>;
+			vsync-len = <3>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			de-active = <1>;
+			pixelclk-active = <1>;*/
+		};
+
+		port {
+			lcd_in: endpoint {
+				remote-endpoint = <&dpi_out>;
+			};
+		};
+	};	
 };
 
 &cpu {
 	cpu0-supply = <&dcdc2>;
 };
+/* This is needed for LCD*/
+&dss {
+	status = "okay";
 
+	pinctrl-names = "default";
+	pinctrl-0 = <&dss_pins>;
+
+	port {
+		dpi_out: endpoint@0 {
+			remote-endpoint = <&lcd_in>;
+			data-lines = <24>;
+		};
+	};
+};
+
+/* This is needed for LCD*/
+&sgx {
+	status = "okay";
+};
 &uart0 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -309,6 +391,32 @@
 		reg = <0x32>;
 		status = "okay";
 	};
+};
+
+
+&i2c2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pins>;
+	clock-frequency = <400000>;
+
+	PCA954x: PCA954x@70{
+		compatible = "nxp,pca9543";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		
+		reg = <0x70>;
+		status = "okay";		
+
+	};
+	ch7026@76 {
+		compatible = "chrontel,ch7026";
+		pinctrl-names = "default";
+		pinctrl-0 = <&ch7620_reset_pin>;		
+		gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
+		reg = <0x76>;
+		status = "okay";
+	};	
 };
 
 &mmc1 {
@@ -533,6 +641,14 @@
 		>;
 	};
 
+	/* I2C2 pins: sda & scl */
+	i2c2_pins: i2c2_pins {
+		pinctrl-single,pins = <
+			0x154 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* i2c0_sda.i2c0_sda */
+			0x150 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* i2c0_scl.i2c0_scl */
+		>;
+	};
+	
 	/* MMC1 pins:  data0 - data3; clk; cmd; detect pin */
 	mmc1_pins: pinmux_mmc1_pins {
 		pinctrl-single,pins = <
@@ -604,6 +720,11 @@
 		>;
 	};
 
+	ch7620_reset_pin:ch7620_reset_pin {
+		pinctrl-single,pins = <
+			0x050 (PIN_OUTPUT | MUX_MODE7) 
+		>;
+	};
 	gpio_keys_pins_default: gpio_keys_pins_default {
 		pinctrl-single,pins = <
 			0x078 (PIN_INPUT | MUX_MODE7)	/*gpmc_be1n.gpio1_28 */
@@ -697,4 +818,38 @@
 			0x26C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi2_cs0.spi2_cs0 */
 		>;
 	};
+	dss_pins: dss_pins {
+		pinctrl-single,pins = <
+			0x020 (PIN_OUTPUT | MUX_MODE1)	/* gpmc ad 8 -> DSS DATA 23 */
+			0x024 (PIN_OUTPUT | MUX_MODE1)
+			0x028 (PIN_OUTPUT | MUX_MODE1)
+			0x02c (PIN_OUTPUT | MUX_MODE1)
+			0x030 (PIN_OUTPUT | MUX_MODE1)
+			0x034 (PIN_OUTPUT | MUX_MODE1)
+			0x038 (PIN_OUTPUT | MUX_MODE1)
+			0x03c (PIN_OUTPUT | MUX_MODE1)	/* gpmc ad 15 -> DSS DATA 16 */
+			0x0a0 (PIN_OUTPUT | MUX_MODE0)	/* DSS DATA 0 */
+			0x0a4 (PIN_OUTPUT | MUX_MODE0)
+			0x0a8 (PIN_OUTPUT | MUX_MODE0)
+			0x0ac (PIN_OUTPUT | MUX_MODE0)
+			0x0b0 (PIN_OUTPUT | MUX_MODE0)
+			0x0b4 (PIN_OUTPUT | MUX_MODE0)
+			0x0b8 (PIN_OUTPUT | MUX_MODE0)
+			0x0bc (PIN_OUTPUT | MUX_MODE0)
+			0x0c0 (PIN_OUTPUT | MUX_MODE0)
+			0x0c4 (PIN_OUTPUT | MUX_MODE0)
+			0x0c8 (PIN_OUTPUT | MUX_MODE0)
+			0x0cc (PIN_OUTPUT | MUX_MODE0)
+			0x0d0 (PIN_OUTPUT | MUX_MODE0)
+			0x0d4 (PIN_OUTPUT | MUX_MODE0)
+			0x0d8 (PIN_OUTPUT | MUX_MODE0)
+			0x0dc (PIN_OUTPUT | MUX_MODE0)	/* DSS DATA 15 */
+			0x0e0 (PIN_OUTPUT | MUX_MODE0)	/* DSS VSYNC */
+			0x0e4 (PIN_OUTPUT | MUX_MODE0)	/* DSS HSYNC */
+			0x0e8 (PIN_OUTPUT | MUX_MODE0)	/* DSS PCLK */
+			0x0ec (PIN_OUTPUT | MUX_MODE0)	/* DSS AC BIAS EN */
+
+		>;
+	};
+	
 };
