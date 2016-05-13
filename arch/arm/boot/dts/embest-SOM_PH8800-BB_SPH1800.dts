@@ -24,6 +24,7 @@
 
 		serial1 = &uart1;
 		serial3 = &uart3;
+		serial5 = &uart5;
 	};
 };
 
@@ -46,6 +47,12 @@
 &uart3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart3_pins>;
+	status = "okay";
+};
+
+&uart5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart5_pins>;
 	status = "okay";
 };
 
@@ -207,6 +214,16 @@
 			0x22c (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart3_txd.uart3_txd */
 			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart3_rts.gpio5_1   */
 			0x230 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart3_cts.gpio5_0   */
+		>;
+	};
+
+	/* UART5 pins: rxd & txd */
+	uart5_pins: pinmux_uart5_pins {
+		pinctrl-single,pins = <
+			0x108 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_col.uart5_rxd */
+			0x144 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* rmii1_refclk.uart5_txd */
+			0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* ctsn */
+			0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* rtsn */
 		>;
 	};
 
