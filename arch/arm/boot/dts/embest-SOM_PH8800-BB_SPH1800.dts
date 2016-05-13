@@ -23,6 +23,7 @@
 	aliases {
 
 		serial1 = &uart1;
+		serial3 = &uart3;
 	};
 };
 
@@ -39,6 +40,12 @@
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart1_pins>;
+	status = "okay";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_pins>;
 	status = "okay";
 };
 
@@ -190,6 +197,16 @@
 		pinctrl-single,pins = <
 			0x180 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart1_rxd.uart1_rxd */
 			0x184 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart1_txd.uart1_txd */
+		>;
+	};
+
+	/* UART3 pins: rxd & txd */
+	uart3_pins: pinmux_uart3_pins {
+		pinctrl-single,pins = <
+			0x228 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart3_rxd.uart3_rxd */
+			0x22c (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart3_txd.uart3_txd */
+			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart3_rts.gpio5_1   */
+			0x230 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart3_cts.gpio5_0   */
 		>;
 	};
 
