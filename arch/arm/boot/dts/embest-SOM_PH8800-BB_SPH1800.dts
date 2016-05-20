@@ -325,6 +325,10 @@
 };
 
 
+&rtc {
+	status = "okay";
+	ext-clk-src;
+};
 
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
