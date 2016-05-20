@@ -59,6 +59,14 @@
 		};
 	};
 
+	backlight: backlight {
+		compatible = "pwm-backlight";
+
+		pwms = <&ecap0 0 50000 PWM_POLARITY_INVERTED>;
+		brightness-levels = <0 51 53 56 62 75 101 152 255>;
+		default-brightness-level = <6>;
+	};
+
 	lcd0: display {
 		compatible = "newhaven,nhd-4.3-480272ef-atxl", "panel-dpi";
 		label = "lcd";
@@ -389,6 +397,18 @@
 	status = "okay";
 };
 
+/* This is needed for backlight */
+&epwmss0 {
+	status = "okay";
+};
+
+/* This is needed for backlight */
+&ecap0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&ecap0_pins>;
+};
+
 &mac {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cpsw_default>;
@@ -615,6 +635,12 @@
 		pinctrl-single,pins = <
 			0x240 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_csn3.gpio5_10 */
 			0x248 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_ben1.gpio5_12 */
+		>;
+	};
+
+	ecap0_pins: backlight_pins {
+		pinctrl-single,pins = <
+			0x164 (PIN_OUTPUT | MUX_MODE0) /* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
 		>;
 	};
 
