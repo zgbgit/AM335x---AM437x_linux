@@ -34,6 +34,18 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 	};
+
+	fragment@2 {
+		target-path = "/clocks";
+		__overlay__ {
+			/* external oscillator of sc16is752 on SPI0 */
+			clk_sc16is752: sc16is752_osc {
+				compatible = "fixed-clock";
+				#clock-cells = <0>;
+				clock-frequency  = <1843200>;
+			};
+		};
+	};
 };
 
 &uart0 {
@@ -58,6 +70,26 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart4_pins>;
 	status = "okay";
+};
+
+&spi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi0_pins>;
+	ti,pindir-d0-out-d1-in = <1>;
+	status = "okay";
+
+	sc16is752: sc16is752@0 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&sc16is752_irq_pins>;
+		spi-max-frequency = <4000000>;
+		reg = <0>;
+		compatible = "nxp,sc16is752";
+		clocks = <&clk_sc16is752>;
+		interrupt-parent = <&gpio2>;
+		interrupts = <2 0x2>;
+		gpio-controller;
+		#gpio-cells = <1>;
+	};
 };
 
 &i2c0 {
@@ -213,6 +245,21 @@
 		pinctrl-single,pins = <
 			0x168 (PIN_INPUT_PULLUP | MUX_MODE1)	/* uart0_ctsn.uart4_rxd */
 			0x16c (PIN_OUTPUT_PULLDOWN | MUX_MODE1)	/* uart0_rtsn.uart4_txd */
+		>;
+	};
+
+	spi0_pins: pinmux_spi0 {
+		pinctrl-single,pins = <
+			0x150 (PIN_INPUT_PULLUP | MUX_MODE0) /* spi0_sclk.spi0_sclk */
+			0x154 (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi0_d0.spi0_d0 */
+			0x158 (PIN_INPUT_PULLUP | MUX_MODE0) /* spi0_d1.spi0_d1 */
+			0x15C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi0_cs0.spi0_cs0 */
+		>;
+	};
+
+	sc16is752_irq_pins: sc16is752_irq_pins {
+		pinctrl-single,pins = <
+			0x090 (PIN_INPUT | MUX_MODE7)	    /* gpmc_advn_ale.gpio2_2 */
 		>;
 	};
 
