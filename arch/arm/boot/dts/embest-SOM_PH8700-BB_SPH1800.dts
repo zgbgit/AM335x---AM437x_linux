@@ -129,6 +129,11 @@
 	tps: tps@24 {
 		reg = <0x24>;
 	};
+
+	eeprom: eeprom@50 {
+		compatible = "at24,24c32";
+		reg = <0x50>;
+	};
 };
 
 &mmc1 {
