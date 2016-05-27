@@ -6,12 +6,12 @@
  * published by the Free Software Foundation.
  *
  * This dts is for embest own product:
- * SOM-PH8700 + BB-EPH1800
+ * SOM-PH8700 + BB-SPH1800
  */
 /*/dts-v1/;*/
 
-#include "embest-SOM_PH8700-BB_EPH1800.dts"
-/*
+#include "embest-SOM_PH8700-BB_SPH1800.dts"
+
 &lcd0 {
 	display-timings {
 		480x272p62 {
@@ -47,4 +47,4 @@
 		ti,chan-step-sampledelay = <0x0 0x0 0x0 0x0>;
 		ti,chan-step-avg = <2 2 2 2>; 
 	};
-};*/
+};
