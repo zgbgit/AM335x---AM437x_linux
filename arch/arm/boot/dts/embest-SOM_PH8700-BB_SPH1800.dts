@@ -142,6 +142,11 @@
 	status = "okay";
 };
 
+/* RTC */
+&rtc {
+	status = "okay";
+};
+
 /*Ethernet*/
 &mac {
 	pinctrl-names = "default", "sleep";
