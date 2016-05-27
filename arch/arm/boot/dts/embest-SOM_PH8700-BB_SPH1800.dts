@@ -56,6 +56,13 @@
 		};
 	};
 
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&ecap0 0 50000 0>;
+		brightness-levels = <0 51 53 56 62 75 101 152 255>;
+		default-brightness-level = <8>;
+	};
+
 	fragment@2 {
 		target-path = "/clocks";
 		__overlay__ {
@@ -211,6 +218,16 @@
 
 &cppi41dma  {
 	status = "okay";
+};
+
+&epwmss0 {
+	status = "okay";
+
+	ecap0: ecap@48300100 {
+		status = "okay";
+		pinctrl-names = "default";
+		pinctrl-0 = <&ecap0_pins_default>;
+	};
 };
 
 /include/ "tps65217.dtsi"
@@ -394,6 +411,12 @@
 		pinctrl-single,pins = <
 			0x088 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_csn3.gpio2_0 */
 			0x078 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ben1.gpio1_28 */
+		>;
+	};
+
+	ecap0_pins_default: backlight_pins {
+		pinctrl-single,pins = <
+			0x164 0x0	/* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out MODE0 */
 		>;
 	};
 
