@@ -6,11 +6,11 @@
  * published by the Free Software Foundation.
  *
  * This dts is for embest own product:
- * EVK-EC8800
+ * SBC-EC8800
  */
 /*/dts-v1/;*/
 
-#include "embest-EVK-EC8800.dts"
+#include "embest-SBC-EC8800.dts"
 
 &backlight {
 	compatible = "pwm-backlight";
