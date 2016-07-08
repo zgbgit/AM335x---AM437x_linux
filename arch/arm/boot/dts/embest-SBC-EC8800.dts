@@ -50,7 +50,7 @@
 		bt_en {
 			label = "ec8800:bt_en";
 			gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;
-			default-state = "on";
+			default-state = "off";
 		};
 	};
 
