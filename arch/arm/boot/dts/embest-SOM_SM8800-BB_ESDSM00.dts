@@ -407,6 +407,28 @@
 		reg = <0x32>;
 		status = "okay";
 	};
+	ov5640@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&clkout2_pin>;	
+		
+		clocks = <&clkout2_ck>;
+		clock-names = "mclk";
+		assigned-clocks = <&clkout2_mux_ck>, <&clkout2_post_div_ck>;
+		assigned-clock-parents = <&dpll_disp_m2_ck>;
+		assigned-clock-rates = <50000000>, <25000000>;		
+		
+		pwn = <&gpio4 3 GPIO_ACTIVE_HIGH>;
+		/*rst = <&gpio1 22 GPIO_ACTIVE_LOW>; */
+		 rst = <&gpio0 19 GPIO_ACTIVE_LOW>;
+		port {
+			ov5640_1: endpoint {
+				remote-endpoint = <&vpfe0_ep>;
+				link-frequencies = /bits/ 64 <70000000>;
+			};
+		};
+	};
 };
 
 
@@ -432,6 +454,25 @@
 		gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
 		reg = <0x76>;
 		status = "okay";
+	};	
+	
+	
+	
+};
+&vpfe0 {
+	status = "okay";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&vpfe0_pins_default>;
+	pinctrl-1 = <&vpfe0_pins_sleep>;
+
+	port {
+		vpfe0_ep: endpoint {
+			remote-endpoint = <&ov5640_1>;
+			ti,am437x-vpfe-interface = <0>;
+			bus-width = <8>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+		};
 	};	
 };
 
@@ -467,6 +508,16 @@
 };
 	
 &gpio1 {
+	status = "okay";
+};
+&gpio2 {
+	status = "okay";
+};
+
+&gpio3 {
+	status = "okay";
+};
+&gpio4 {
 	status = "okay";
 };
 
@@ -812,7 +863,7 @@
 	
 	mcasp0_pins: mcasp0_pins {
 		pinctrl-single,pins = <
-			0x270 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* xdma_event_intr0.clkout1 */
+			/*0x270 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	 xdma_event_intr0.clkout1 */
 			0x194 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_fsx.mcasp0_fsx */
 			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* mcasp0_axr0.mcasp0_axr0 */
 			0x19c (PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mcasp0_ahclkr.mcasp0_axr2  */
@@ -868,4 +919,50 @@
 		>;
 	};
 	
+		
+	vpfe0_pins_default: vpfe0_pins_default {
+		pinctrl-single,pins = <
+			0x1B0 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_hd mode 0*/
+			0x1B4 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_vd mode 0*/
+			0x1C0 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_pclk mode 0*/
+			0x1C4 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data8 mode 0*/
+			0x1C8 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data9 mode 0*/
+			0x208 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data0 mode 0*/
+			0x20C (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data1 mode 0*/
+			0x210 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data2 mode 0*/
+			0x214 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data3 mode 0*/
+			0x218 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data4 mode 0*/
+			0x21C (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data5 mode 0*/
+			0x220 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data6 mode 0*/
+			0x224 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data7 mode 0*/
+		>;
+	};
+
+	vpfe0_pins_sleep: vpfe0_pins_sleep {
+		pinctrl-single,pins = <
+			0x1B0 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_hd mode 0*/
+			0x1B4 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_vd mode 0*/
+			0x1C0 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_pclk mode 0*/
+			0x1C4 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data8 mode 0*/
+			0x1C8 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data9 mode 0*/
+			0x208 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data0 mode 0*/
+			0x20C (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data1 mode 0*/
+			0x210 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data2 mode 0*/
+			0x214 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data3 mode 0*/
+			0x218 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data4 mode 0*/
+			0x21C (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data5 mode 0*/
+			0x220 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data6 mode 0*/
+			0x224 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data7 mode 0*/
+		>;
+	};
+	
+	
+	clkout2_pin: pinmux_clkout2_pin {
+		pinctrl-single,pins = <
+			0x274 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* XDMA_EVENT_INTR1/CLKOUT2 */
+			0x1bc (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* pwn.gpio4_3 */
+			0x270 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* rst gpio0_19 */
+			0x058 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* rst gpio1_22 */
+		>;	
+	};
 };

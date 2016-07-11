@@ -1832,6 +1832,42 @@ static int vpfe_s_input(struct file *file, void *priv, unsigned int index)
 	return vpfe_set_input(vpfe, index);
 }
 
+static int vpfe_g_parm  (struct file *file, void *fh,struct v4l2_streamparm *a)
+{
+	struct vpfe_device *vpfe = video_drvdata(file);
+	struct vpfe_subdev_info *sdinfo;
+	int ret = -EINVAL;;
+
+	vpfe_dbg(2, vpfe,"\n");
+
+	sdinfo = vpfe->current_subdev;
+
+	if(NULL  != sdinfo->sd)
+	ret = v4l2_subdev_call(sdinfo->sd, video, g_parm, a);
+
+
+	return ret;
+
+
+}
+
+static int vpfe_s_parm  (struct file *file, void *fh,struct v4l2_streamparm *a)
+{
+
+	struct vpfe_device *vpfe = video_drvdata(file);
+	struct vpfe_subdev_info *sdinfo;
+	int ret = -EINVAL;;
+
+	vpfe_dbg(2, vpfe,"v4l2_streamparm type : %d\n",a->type);
+
+	sdinfo = vpfe->current_subdev;
+
+	if(NULL  != sdinfo->sd)
+	ret = v4l2_subdev_call(sdinfo->sd, video, s_parm, a);
+
+
+	return ret;
+}
 static int vpfe_querystd(struct file *file, void *priv, v4l2_std_id *std_id)
 {
 	struct vpfe_device *vpfe = video_drvdata(file);
@@ -2271,6 +2307,8 @@ static const struct v4l2_ioctl_ops vpfe_ioctl_ops = {
 	.vidioc_g_input			= vpfe_g_input,
 	.vidioc_s_input			= vpfe_s_input,
 
+	.vidioc_g_parm			= vpfe_g_parm,
+	.vidioc_s_parm		= vpfe_s_parm,
 	.vidioc_querystd		= vpfe_querystd,
 	.vidioc_s_std			= vpfe_s_std,
 	.vidioc_g_std			= vpfe_g_std,
