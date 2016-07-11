@@ -209,6 +209,12 @@
 		compatible = "at24,24c32";
 		reg = <0x50>;
 	};
+
+        rx8025: rx8025@32 {
+                compatible = "epson,rx8025";
+                reg = <0x32>;
+                status = "okay";
+        };
 };
 
 &mmc1 {
@@ -237,7 +243,7 @@
 
 /* RTC */
 &rtc {
-	status = "okay";
+	status = "disabled";
 };
 
 /*Ethernet*/
