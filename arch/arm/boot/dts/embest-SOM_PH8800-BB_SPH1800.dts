@@ -412,6 +412,7 @@
 &mac {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cpsw_default>;
+	pinctrl-1 = <&cpsw_sleep>;
 	dual_emac = <1>;
 	status = "okay";
 };
@@ -419,6 +420,7 @@
 &davinci_mdio {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&davinci_mdio_default>;
+	pinctrl-1 = <&davinci_mdio_sleep>;
 	status = "okay";
 };
 
@@ -426,6 +428,12 @@
 	phy_id = <&davinci_mdio>, <7>;
 	phy-mode = "rgmii";
 	dual_emac_res_vlan = <1>;
+};
+
+&cpsw_emac1 {
+	phy_id = <&davinci_mdio>, <6>;
+	phy-mode = "rgmii";
+	dual_emac_res_vlan = <2>;
 };
 
 
@@ -595,11 +603,51 @@
 		>;
 	};
 
+	cpsw_sleep: cpsw_sleep {
+	pinctrl-single,pins = <
+			/* Slave 1 reset value */
+			0x12c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x114 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x128 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x124 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x120 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x11c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x130 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x118 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x140 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x13c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x138 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x134 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+
+			/* Slave 2 reset value */
+			0x58 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x40 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x54 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x50 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x4c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x48 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x5c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x44 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x6c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x68 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x64 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x60 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+		>;
+	}; 
+
 	davinci_mdio_default: davinci_mdio_default {
 		pinctrl-single,pins = <
 			/* MDIO */
 			0x148 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE0)	/* mdio_data.mdio_data */
 			0x14c (PIN_OUTPUT | MUX_MODE0)			/* mdio_clk.mdio_clk */
+		>;
+	};
+
+	davinci_mdio_sleep: davinci_mdio_sleep {
+		pinctrl-single,pins = <
+			/* MDIO reset value */
+			0x148 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x14c (PIN_INPUT_PULLDOWN | MUX_MODE7)
 		>;
 	};
 
