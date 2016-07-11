@@ -384,6 +384,7 @@ static int ds1307_get_time(struct device *dev, struct rtc_time *t)
 
 	/* assume 20YY not 19YY, and ignore DS1337_BIT_CENTURY */
 	t->tm_year = bcd2bin(ds1307->regs[DS1307_REG_YEAR]) + 100;
+	if( t->tm_year > 150 ) t->tm_year = 100;
 
 	dev_dbg(dev, "%s secs=%d, mins=%d, "
 		"hours=%d, mday=%d, mon=%d, year=%d, wday=%d\n",
