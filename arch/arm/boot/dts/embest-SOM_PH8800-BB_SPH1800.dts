@@ -644,6 +644,14 @@
 		>;
 	};
 
+	/* I2C1 pins: sda & scl */
+	i2c1_pins: i2c1_pins {
+		pinctrl-single,pins = <
+			0x15c (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_cs0.i2c1_scl */
+			0x158 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_d1.i2c1_sda  */
+		>;
+	};
+
 	dss_pins: dss_pins {
 		pinctrl-single,pins = <
 			0x020 (PIN_OUTPUT | MUX_MODE1)	/* gpmc ad 8 -> DSS DATA 23 */
@@ -675,6 +683,16 @@
 			0x0e8 (PIN_OUTPUT | MUX_MODE0)	/* DSS PCLK */
 			0x0ec (PIN_OUTPUT | MUX_MODE0)	/* DSS AC BIAS EN */
 
+		>;
+	};
+
+	mcasp0_pins: mcasp0_pins {
+		pinctrl-single,pins = <
+			0x190 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_ACLKX.MCASP0_ACLKX */
+			0x194 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_FSX.MCASP0_FSX */
+			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AXR0.MCASP0_AXR0 */
+			0x1a8 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AXR1.MCASP0_AXR1 */
+			0x1ac (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AHCLKX.MCASP0_AHCLKX */
 		>;
 	};
 };
