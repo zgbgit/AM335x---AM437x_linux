@@ -1428,13 +1428,13 @@ static int smsc911x_phy_enable_energy_detect(struct smsc911x_data *pdata)
 	/* Only enable if energy detect mode is already disabled */
 	if (!(rc & MII_LAN83C185_EDPWRDOWN)) {
 		/* Enable energy detect mode for this SMSC Transceivers */
-		rc = phy_write(pdata->phy_dev, MII_LAN83C185_CTRL_STATUS,
+		/*rc = phy_write(pdata->phy_dev, MII_LAN83C185_CTRL_STATUS,
 			       rc | MII_LAN83C185_EDPWRDOWN);
 
 		if (rc < 0) {
 			SMSC_WARN(pdata, drv, "Failed writing PHY control reg");
 			return rc;
-		}
+		}*/
 	}
 	return 0;
 }
