@@ -182,7 +182,7 @@ static int evm_tda998x_init(struct snd_soc_pcm_runtime *rtd)
 		return ret;
 
 	ret = snd_soc_dai_set_sysclk(cpu_dai, 0, drvdata->sysclk,
-				     SND_SOC_CLOCK_IN);
+				     SND_SOC_CLOCK_OUT);
 	if (ret < 0)
 		return ret;
 
