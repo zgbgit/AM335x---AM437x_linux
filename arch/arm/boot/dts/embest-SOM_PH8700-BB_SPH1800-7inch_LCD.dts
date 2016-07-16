@@ -13,6 +13,7 @@
 #include "embest-SOM_PH8700-BB_SPH1800.dts"
 
 &lcd0 {
+	enable-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>; 
 	display-timings {
 		800x480p62 {
 			clock-frequency = <36000000>;
