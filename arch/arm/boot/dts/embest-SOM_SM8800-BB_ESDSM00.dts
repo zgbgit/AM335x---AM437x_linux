@@ -380,7 +380,7 @@
 		pagesize = <64>;
 		reg = <0x57>;
 	};
-	
+
 	wm8904: wm8904@1a {
 		#sound-dai-cells = <0>;
 		compatible = "wlf,wm8904";
@@ -407,30 +407,9 @@
 		reg = <0x32>;
 		status = "okay";
 	};
-	ov5640@3c {
-		compatible = "ovti,ov5640";
-		reg = <0x3c>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&clkout2_pin>;	
-		
-		clocks = <&clkout2_ck>;
-		clock-names = "mclk";
-		assigned-clocks = <&clkout2_mux_ck>, <&clkout2_post_div_ck>;
-		assigned-clock-parents = <&dpll_disp_m2_ck>;
-		assigned-clock-rates = <50000000>, <25000000>;		
-		
-		pwn = <&gpio4 3 GPIO_ACTIVE_HIGH>;
-		/*rst = <&gpio1 22 GPIO_ACTIVE_LOW>; */
-		 rst = <&gpio0 19 GPIO_ACTIVE_LOW>;
-		port {
-			ov5640_1: endpoint {
-				remote-endpoint = <&vpfe0_ep>;
-				link-frequencies = /bits/ 64 <70000000>;
-			};
-		};
-	};
-};
 
+
+};
 
 &i2c2 {
 	status = "okay";
@@ -447,6 +426,7 @@
 		status = "okay";		
 
 	};
+
 	ch7026@76 {
 		compatible = "chrontel,ch7026";
 		pinctrl-names = "default";
@@ -454,10 +434,31 @@
 		gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
 		reg = <0x76>;
 		status = "okay";
+	};
+
+	ov5640@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&clkout2_pin>;	
+
+		clocks = <&clkout2_ck>;
+		clock-names = "mclk";
+		assigned-clocks = <&clkout2_mux_ck>, <&clkout2_post_div_ck>;
+		assigned-clock-parents = <&sysclk_div>;
+		assigned-clock-rates = <0>, <12500000>;		
+
+		pwn = <&gpio4 3 GPIO_ACTIVE_HIGH>;
+		rst = <&gpio1 22 GPIO_ACTIVE_LOW>;
+		/*rst = <&gpio0 19 GPIO_ACTIVE_LOW>;*/
+		port {
+			ov5640_1: endpoint {
+				remote-endpoint = <&vpfe0_ep>;
+				link-frequencies = /bits/ 64 <70000000>;
+			};
+		};
 	};	
-	
-	
-	
+
 };
 &vpfe0 {
 	status = "okay";
