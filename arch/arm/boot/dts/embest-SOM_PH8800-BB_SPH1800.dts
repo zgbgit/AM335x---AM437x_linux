@@ -359,8 +359,8 @@
 		clocks = <&clkout2_ck>;
 		clock-names = "mclk";
 		assigned-clocks = <&clkout2_mux_ck>, <&clkout2_post_div_ck>;
-		assigned-clock-parents = <&dpll_disp_m2_ck>;
-		assigned-clock-rates = <50000000>, <25000000>;		
+		assigned-clock-parents = <&sysclk_div>;
+		assigned-clock-rates = <0>, <12500000>;		
 		
 		pwn = <&gpio4 3 GPIO_ACTIVE_HIGH>;
 		/*rst = <&gpio1 22 GPIO_ACTIVE_LOW>; */
