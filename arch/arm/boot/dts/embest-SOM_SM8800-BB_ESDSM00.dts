@@ -48,6 +48,15 @@
 		};
 	};
 
+	wifi_bt_reset{
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_reset_pins>;
+        
+		compatible = "gpio_reset";
+		bt-gpios = <&gpio1 26 GPIO_ACTIVE_HIGH>;
+		wifi-gpios = <&gpio1 23 GPIO_ACTIVE_HIGH>;
+	};
+
 	/* Generic GPIO buzzer device  as misc device */
 	buzzer {
 		pinctrl-names = "default";
@@ -667,9 +676,8 @@
 		pinctrl-single,pins = <
 			0x108 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_col.uart5_rxd */
 			0x144 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* rmii1_refclk.uart5_txd */
-			//0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* ctsn */
-			//0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* rtsn */
-			//0x1dc (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* BT_EN */
+			0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE5)	/* ctsn */
+			0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE5) /* rtsn */
 		>;
 	};
 
@@ -778,7 +786,7 @@
 	user_leds: user_leds {
 		pinctrl-single,pins = <
 			0x240 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_csn3.gpio5_10 */			
-			0x248 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_ben1.gpio5_12 */		
+			0x248 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_ben1.gpio5_12 */
 		>;
 	};
 
@@ -956,8 +964,7 @@
 			0x224 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data7 mode 0*/
 		>;
 	};
-	
-	
+
 	clkout2_pin: pinmux_clkout2_pin {
 		pinctrl-single,pins = <
 			0x274 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* XDMA_EVENT_INTR1/CLKOUT2 */
@@ -965,5 +972,12 @@
 			0x270 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* rst gpio0_19 */
 			0x058 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* rst gpio1_22 */
 		>;	
+	};
+
+	wifi_reset_pins: wifi_reset_pins{
+		pinctrl-single,pins = <
+			0x5c (PIN_OUTPUT_PULLUP | MUX_MODE7)		/*  WL_EN gpmc_a7.gpio1_23*/
+			0x068 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	        /*  BT_EN gpmc_a10.gpio1_26*/
+		>;
 	};
 };

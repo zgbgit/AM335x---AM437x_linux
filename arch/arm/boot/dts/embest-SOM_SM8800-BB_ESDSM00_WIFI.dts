@@ -12,21 +12,9 @@
 
 #include "embest-SOM_SM8800-BB_ESDSM00.dts"
 
-/ {
-	vmmcwl_fixed: fixedregulator@2 {
-		compatible = "regulator-fixed";
-		regulator-name = "wlan-en-regulator";
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-		/*WLAN_EN GPIO for this board - Bank1, pin16 */
-		gpio = <&gpio1 23 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-	};
-};
-
 &mmc1 {
 	status = "okay";
-	vmmc-supply = <&vmmcwl_fixed>;
+	vmmc-supply = <&dcdc4>;
 	bus-width = <1>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mmc1_pins_default>;
@@ -73,14 +61,12 @@
 
 	wlan_pins_default: pinmux_wlan_pins_default {
 		pinctrl-single,pins = <
-			0x5c (PIN_OUTPUT_PULLUP | MUX_MODE7)		/*  WL_EN gpmc_a7.gpio1_23*/
 			0x44 (PIN_INPUT | WAKEUP_ENABLE | MUX_MODE7)	/*  WL_IRQ gpmc_a1.gpio1_17*/
 		>;
 	};
 
 	wlan_pins_sleep: pinmux_wlan_pins_sleep {
 		pinctrl-single,pins = <
-			0x5c (PIN_OUTPUT_PULLUP | MUX_MODE7)		/*  WL_EN gpmc_a7.gpio1_23*/
 			0x44 (PIN_INPUT | WAKEUP_ENABLE | MUX_MODE7)	/*  WL_IRQ gpmc_a1.gpio1_17*/
 		>;
 	};
