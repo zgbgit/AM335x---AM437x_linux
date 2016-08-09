@@ -263,7 +263,7 @@ static int enable_mux_ch7026(void)
 	client_pac9543.addr = PCA9543A_ADDR;
 
 	pca9543a_crtl_reg = pca9543a_reg_read(&client_pac9543);
-	pca9543a_crtl_reg |= PCA9543A_CH_1;
+	pca9543a_crtl_reg |=  PCA9543A_CH_0 | PCA9543A_CH_1;
 
 	ret = pca9543a_reg_write(&client_pac9543,pca9543a_crtl_reg);
 	return ret;
