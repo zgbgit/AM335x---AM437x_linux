@@ -613,6 +613,9 @@ source "drivers/char/xillybus/Kconfig"
 
 config BUZZER_GPIO
     tristate "buzzer driver depend on gpio"
+    
+config RESET_GPIO
+    tristate "reset driver depend on gpio"
 
 endmenu
 

@@ -62,4 +62,5 @@ js-rtc-y = rtc.o
 
 obj-$(CONFIG_TILE_SROM)		+= tile-srom.o
 obj-$(CONFIG_XILLYBUS)		+= xillybus/
-obj-$(CONFIG_BUZZER_GPIO)		+= buzzer-gpio.o
+obj-$(CONFIG_BUZZER_GPIO)	+= buzzer-gpio.o
+obj-$(CONFIG_RESET_GPIO)	+= reset-gpio.o
