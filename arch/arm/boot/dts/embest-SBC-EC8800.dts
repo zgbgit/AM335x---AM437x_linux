@@ -46,22 +46,15 @@
 			linux,default-trigger = "none";
 			default-state = "on";
 		};
-
-		bt_en {
-			label = "ec8800:bt_en";
-			gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;
-			default-state = "off";
-		};
 	};
 
-	wlan_en_reg: fixedregulator@2 {
-		compatible = "regulator-fixed";
-		regulator-name = "wlan-en-regulator";
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-		/* WLAN_EN GPIO for this board - Bank1, pin16 */
-		gpio = <&gpio4 14 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
+	wifi_bt_reset{
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_reset_pins>;
+
+		compatible = "gpio_reset";
+		bt-gpios = <&gpio4 8 GPIO_ACTIVE_HIGH>;
+		wifi-gpios = <&gpio4 14 GPIO_ACTIVE_HIGH>;
 	};
 
 	wilink8_pcm: wilink8_pcm {
@@ -362,7 +355,7 @@
 	dmas = <&edma 30
 	&edma 31>;
 	dma-names = "tx", "rx";
-	vmmc-supply = <&wlan_en_reg>;
+	vmmc-supply = <&dcdc4>;
 	bus-width = <4>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mmc3_pins_default>;
@@ -578,7 +571,6 @@
 			0x144 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* rmii1_refclk.uart5_txd */
 			0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* ctsn */
 			0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7) /* rtsn */
-			0x1d0 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* BT_EN */
 		>;
 	};
 
@@ -699,15 +691,20 @@
 
 	wlan_pins_default: pinmux_wlan_pins_default {
 		pinctrl-single,pins = <
-			0x1e8 (PIN_OUTPUT_PULLUP | MUX_MODE7)		/*  WL_EN */
 			0x1ec (PIN_INPUT | WAKEUP_ENABLE | MUX_MODE7)	/*  WL_IRQ */
 		>;
 	};
 
 	wlan_pins_sleep: pinmux_wlan_pins_sleep {
 		pinctrl-single,pins = <
-			0x1e8 (PIN_OUTPUT_PULLUP | MUX_MODE7)		/* WL_EN */
 			0x1ec (PIN_INPUT | WAKEUP_ENABLE | MUX_MODE7)	/* WL_IRQ */
+		>;
+	};
+
+	wifi_reset_pins: wifi_reset_pins{
+		pinctrl-single,pins = <
+			0x1e8 (PIN_OUTPUT | MUX_MODE7)	/*  WL_EN */
+			0x1d0 (PIN_OUTPUT | MUX_MODE7)	/*  BT_EN */
 		>;
 	};
 
