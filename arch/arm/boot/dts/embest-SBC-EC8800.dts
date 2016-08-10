@@ -6,7 +6,7 @@
  * published by the Free Software Foundation.
  *
  * This dts is for embest own product:
- * SOM-PH8800 + BB-EPH1800
+ * SBC-EC8800
  */
 /dts-v1/;
 
@@ -279,6 +279,55 @@
 		compatible = "at24,24c256";
 		pagesize = <64>;
 		reg = <0x50>;
+	};
+};
+
+
+&i2c1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins>;
+	clock-frequency = <400000>;
+	
+	ov5640@3c {
+		compatible = "ovti,ov5640";
+		reg = <0x3c>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&clkout2_pin>;	
+		
+		clocks = <&clkout2_ck>;
+		clock-names = "mclk";
+		assigned-clocks = <&clkout2_mux_ck>, <&clkout2_post_div_ck>;
+		assigned-clock-parents = <&sysclk_div>;
+		assigned-clock-rates = <0>, <12500000>;		
+		
+		pwn = <&gpio4 3 GPIO_ACTIVE_HIGH>;
+		rst = <&gpio0 4 GPIO_ACTIVE_LOW>;
+		
+		port {
+			ov5640_1: endpoint {
+				remote-endpoint = <&vpfe0_ep>;
+				link-frequencies = /bits/ 64 <70000000>;
+			};
+		};
+	};
+};
+
+&vpfe0 {
+	status = "okay";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&vpfe0_pins_default>;
+	pinctrl-1 = <&vpfe0_pins_sleep>;
+
+	/* Camera port */
+	port {
+		vpfe0_ep: endpoint {
+			remote-endpoint = <&ov5640_1>;
+			ti,am437x-vpfe-interface = <0>;
+			bus-width = <8>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+		};
 	};
 };
 
@@ -769,6 +818,66 @@
 			0x94 (PIN_INPUT | MUX_MODE3)    /* gpmc_oen_ren.qspi_d1 */
 			0x98 (PIN_INPUT | MUX_MODE3)    /* gpmc_wen.qspi_d2 */
 			0x9c (PIN_INPUT | MUX_MODE3)    /* gpmc_be0n_cle.qspi_d3 */
+		>;
+	};
+
+	clkout2_pin: pinmux_clkout2_pin {
+		pinctrl-single,pins = <
+			0x274 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* XDMA_EVENT_INTR1/CLKOUT2 */
+			0x1bc (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* pwn.gpio4_3 */
+			0x08c (PIN_OUTPUT_PULLDOWN | MUX_MODE9)	/* rst gpio0_4 */
+		>;	
+	};
+
+	/* I2C1 pins: sda & scl */
+	i2c1_pins: i2c1_pins {
+		pinctrl-single,pins = <
+			0x15c (PIN_INPUT_PULLDOWN | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_cs0.i2c1_scl */
+			0x158 (PIN_INPUT_PULLDOWN | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_d1.i2c1_sda  */
+		>;
+	};
+
+	/* I2C2 pins: sda & scl */
+	i2c2_pins: i2c2_pins {
+		pinctrl-single,pins = <
+			0x154 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* i2c0_sda.i2c0_sda */
+			0x150 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* i2c0_scl.i2c0_scl */
+		>;
+	};
+
+	vpfe0_pins_default: vpfe0_pins_default {
+		pinctrl-single,pins = <
+			0x1B0 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_hd mode 0*/
+			0x1B4 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_vd mode 0*/
+			0x1C0 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_pclk mode 0*/
+			0x1C4 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data8 mode 0*/
+			0x1C8 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data9 mode 0*/
+			0x208 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data0 mode 0*/
+			0x20C (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data1 mode 0*/
+			0x210 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data2 mode 0*/
+			0x214 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data3 mode 0*/
+			0x218 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data4 mode 0*/
+			0x21C (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data5 mode 0*/
+			0x220 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data6 mode 0*/
+			0x224 (PIN_INPUT_PULLUP | MUX_MODE0)  /* cam0_data7 mode 0*/
+		>;
+	};
+
+	vpfe0_pins_sleep: vpfe0_pins_sleep {
+		pinctrl-single,pins = <
+			0x1B0 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_hd mode 0*/
+			0x1B4 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_vd mode 0*/
+			0x1C0 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_pclk mode 0*/
+			0x1C4 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data8 mode 0*/
+			0x1C8 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data9 mode 0*/
+			0x208 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data0 mode 0*/
+			0x20C (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data1 mode 0*/
+			0x210 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data2 mode 0*/
+			0x214 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data3 mode 0*/
+			0x218 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data4 mode 0*/
+			0x21C (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data5 mode 0*/
+			0x220 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data6 mode 0*/
+			0x224 (DS0_PULL_UP_DOWN_EN | INPUT_EN | MUX_MODE7)  /* cam0_data7 mode 0*/
 		>;
 	};
 };
