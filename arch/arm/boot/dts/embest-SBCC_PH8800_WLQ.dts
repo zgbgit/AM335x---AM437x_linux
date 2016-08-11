@@ -466,7 +466,7 @@
 		interrupt-parent = <&gpio4>;
 		interrupts = <14 0x2>;
 		gpio-controller;
-		#gpio-cells = <1>;
+		#gpio-cells = <2>;
 	};
 };
 
