@@ -414,7 +414,7 @@
 };
 
 &cpsw_emac1 {
-	phy_id = <&davinci_mdio>, <6>;
+	phy_id = <&davinci_mdio>, <3>;
 	phy-mode = "rgmii";
 	dual_emac_res_vlan = <2>;
 };
