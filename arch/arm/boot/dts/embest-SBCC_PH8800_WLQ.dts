@@ -941,7 +941,8 @@
 
 	lcd_pins: pinmux_lcd_pins {
 		pinctrl-single,pins = <
-			0x19c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* MCASP0_AHCLKR lcd_pins gpio0_19 */
+			0x19c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* MCASP0_AHCLKR lcd_pins gpio3_17 */
+			0x1a8 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* MCASP0_AXR1.MCASP0_AXR1 gpio3_20*/
 		>;	
 	};
 };
