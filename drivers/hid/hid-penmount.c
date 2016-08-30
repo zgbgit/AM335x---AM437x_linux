@@ -31,6 +31,7 @@ static int penmount_input_mapping(struct hid_device *hdev,
 }
 
 static const struct hid_device_id penmount_devices[] = {
+	{ HID_USB_DEVICE(USB_VENDOR_ID_PENMOUNT, 0x3500) },
 	{ HID_USB_DEVICE(USB_VENDOR_ID_PENMOUNT, USB_DEVICE_ID_PENMOUNT_6000) },
 	{ }
 };

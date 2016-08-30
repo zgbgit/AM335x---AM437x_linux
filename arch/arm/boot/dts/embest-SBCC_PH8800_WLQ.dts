@@ -74,6 +74,13 @@
 			linux,default-trigger = "none";
 			default-state = "on";
 		};
+
+		LVDS_PW {
+			label = "LVDS_PW";
+			gpios = <&gpio3 20 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
 	};
 
 	wifi_bt_reset{
@@ -106,7 +113,7 @@
 			/*This is the timing for HDMI&VGA*/
 			clock-frequency = <65000000>;
 			hactive = <800>;
-			vactive = <600>;
+			vactive = <480>;
 			hfront-porch = <40>;
 			hback-porch = <220>;
 			hsync-len = <60>;
@@ -488,7 +495,7 @@
 	spi-max-frequency = <108000000>;
 	status = "okay";
 
-	m25p80@0 {
+	/*m25p80@0 {
 		compatible = "n25q256a";
 		spi-max-frequency = <108000000>;
 		reg = <0>;
@@ -498,7 +505,7 @@
 		spi-rx-bus-width = <1>;
 		#address-cells = <1>;
 		#size-cells = <1>;
-	};
+	};*/
 };
 
 &dcan0 {
