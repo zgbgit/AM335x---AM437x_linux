@@ -142,6 +142,12 @@
 				#clock-cells = <0>;
 				clock-frequency  = <1843200>;
 			};
+
+			clk24m: clk24m_osc {
+				compatible = "fixed-clock";
+				#clock-cells = <0>;
+				clock-frequency  = <25000000>;
+			};
 		};
 	};
 };
@@ -368,6 +374,10 @@
 	status = "okay";
 };
 
+&gpio1 {
+	status = "okay";
+};
+
 &gpio3 {
 	status = "okay";
 };
@@ -495,11 +505,15 @@
 	pinctrl-0 = <&spi4_pins>;
 	ti,pindir-d0-out-d1-in = <1>;
 	status = "okay";
-	spidev@0 {
+
+	can0: can@0 {
+		compatible = "microchip,mcp2515";
 		spi-max-frequency = <24000000>;
 		reg = <0>;
-		compatible = "rohm,dh2228fv";
-        };
+		clocks = <&clk24m>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <4 0x2>;
+	};
 };
 
 &qspi {
@@ -573,6 +587,21 @@
 	pinctrl-0 = <&usb2_pins>;
 };
 
+&i2c2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pins>;
+	clock-frequency = <400000>;
+
+	gpio@20 {
+		compatible = "nxp,pca9555";
+		reg = <0x20>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pca9555>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
+	};
+};
 	
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
@@ -623,6 +652,14 @@
 		pinctrl-single,pins = <
 			0x15c (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_cs0.i2c1_scl */
 			0x158 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_d1.i2c1_sda  */
+		>;
+	};
+
+	/* I2C2 pins: sda & scl */
+	i2c2_pins: i2c2_pins {
+		pinctrl-single,pins = <
+			0x154 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_d0.I2C2_SCL */
+			0x150 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_sclk.I2C2_SDA  */
 		>;
 	};
 
@@ -874,6 +911,8 @@
 			0x254 (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi4_d0.spi4_d0 */
 			0x258 (PIN_INPUT_PULLUP | MUX_MODE0)  /* spi4_d1.spi4_d1 */
 			0x25C (PIN_OUTPUT_PULLUP | MUX_MODE0) /* spi4_cs0.spi4_cs0 */
+
+			0x8c (PIN_INPUT | MUX_MODE9) /* gpmc_clk.gpio0_4 */
 		>;
 	};
 
@@ -971,5 +1010,11 @@
 			0x19c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* MCASP0_AHCLKR lcd_pins gpio3_17 */
 			0x1a8 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* MCASP0_AXR1.MCASP0_AXR1 gpio3_20*/
 		>;	
+	};
+
+	pinctrl_pca9555: pinmux_pinctrl_pca9555 {
+		pinctrl-single,pins = <
+			0x78 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* gpmc_be1n.gpio1_28 */
+		>;
 	};
 };
