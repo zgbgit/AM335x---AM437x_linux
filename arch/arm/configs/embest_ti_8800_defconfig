@@ -1080,7 +1080,7 @@ CONFIG_CAN_C_CAN_PLATFORM=y
 #
 # CAN SPI interfaces
 #
-# CONFIG_CAN_MCP251X is not set
+CONFIG_CAN_MCP251X=y
 
 #
 # CAN USB interfaces
