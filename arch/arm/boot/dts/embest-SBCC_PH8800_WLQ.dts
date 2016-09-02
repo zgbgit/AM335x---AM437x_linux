@@ -367,6 +367,10 @@
 	status = "okay";
 };
 
+&gpio1 {
+	status = "okay";
+};
+
 &gpio3 {
 	status = "okay";
 };
@@ -563,6 +567,21 @@
 	pinctrl-0 = <&usb2_pins>;
 };
 
+&i2c2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pins>;
+	clock-frequency = <400000>;
+
+	gpio@20 {
+		compatible = "nxp,pca9555";
+		reg = <0x20>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pca9555>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
+	};
+};
 	
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
@@ -613,6 +632,14 @@
 		pinctrl-single,pins = <
 			0x15c (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_cs0.i2c1_scl */
 			0x158 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_d1.i2c1_sda  */
+		>;
+	};
+
+	/* I2C2 pins: sda & scl */
+	i2c2_pins: i2c2_pins {
+		pinctrl-single,pins = <
+			0x154 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_d0.I2C2_SCL */
+			0x150 (PIN_INPUT | SLEWCTRL_FAST | MUX_MODE2)  /* spi0_sclk.I2C2_SDA  */
 		>;
 	};
 
@@ -955,5 +982,11 @@
 		pinctrl-single,pins = <
 			0x19c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* MCASP0_AHCLKR lcd_pins gpio0_19 */
 		>;	
+	};
+
+	pinctrl_pca9555: pinmux_pinctrl_pca9555 {
+		pinctrl-single,pins = <
+			0x78 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* gpmc_be1n.gpio1_28 */
+		>;
 	};
 };
