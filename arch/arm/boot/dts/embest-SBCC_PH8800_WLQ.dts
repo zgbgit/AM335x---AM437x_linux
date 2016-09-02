@@ -394,6 +394,19 @@
 	pinctrl-0 = <&ecap0_pins>;
 };
 
+
+/* This is needed for PWMs */
+&epwmss5 {
+	status = "okay";
+};
+
+/* This is needed for PWMs */
+&ehrpwm5 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm1_pins>;
+};
+
 &rtc {
 	status = "okay";
 	ext-clk-src;
@@ -722,6 +735,13 @@
 	ecap0_pins: backlight_pins {
 		pinctrl-single,pins = <
 			0x164 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* eCAP0_in_PWM0_out.eCAP0_in_PWM0_out */
+		>;
+	};
+
+	pwm1_pins: pwm1_pins {
+		pinctrl-single,pins = <
+			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE6) /* uart3_rtsn.ehrpwm5B */
+			0x230 (PIN_OUTPUT_PULLDOWN | MUX_MODE6) /* uart3_ctsn.ehrpwm5A */
 		>;
 	};
 
