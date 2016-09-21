@@ -133,6 +133,35 @@
 		};
 	};
 
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "AM437x-PH8800";
+		simple-audio-card,widgets =
+			"Speaker", "Speaker External";
+		simple-audio-card,routing =
+			"Speaker External",	"OUT_D",
+			"Speaker External",	"OUT_C",
+			"Speaker External", "OUT_A",
+			"Speaker External", "OUT_B";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,bitclock-master = <&sound_master>;
+		simple-audio-card,frame-master = <&sound_master>;
+		simple-audio-card,mclk-fs = <512>;
+		/*simple-audio-card,bitclock-inversion;*/
+
+		sound_master: simple-audio-card,cpu {
+			sound-dai = <&mcasp0>;
+			system-clock-frequency = <24000000>;
+			system-clock-direction = "out";
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&tas5731>;
+			system-clock-frequency = <24000000>;
+			system-clock-direction = "in";
+		};
+	};
+
 	fragment@2 {
 		target-path = "/clocks";
 		__overlay__ {
@@ -270,6 +299,18 @@
 		compatible = "epson,rx8025";
 		reg = <0x32>;
 		status = "okay";
+	};
+
+	tas5731: tas5731@1b {
+		compatible = "ti,tas5711";
+		reg = <0x1b>;
+		#sound-dai-cells = <0>;
+		status = "okay";
+		/*reset-gpios = <&gpio0 4 1>;
+		pdn-gpios = <&gpio0 18 1>;
+		ti,charge-period = <156000>;
+		AVDD-supply = <&dcdc4>;
+		DVDD-supply = <&dcdc4>;*/
 	};
 
 	ov5640@3c {
@@ -602,7 +643,23 @@
 		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
 	};
 };
-	
+
+&mcasp0 {
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mcasp0_pins>;
+	status = "okay";
+	op-mode = <0>;
+	tdm-slots = <2>;
+
+	serial-dir = <
+		1 0  0 0
+	>;
+
+	tx-num-evt = <1>;
+	rx-num-evt = <1>;
+};
+
 &am43xx_pinmux {
 	/* UART0 pins: rxd & txd */
 	uart0_pins: pinmux_uart0_pins {
@@ -1015,6 +1072,17 @@
 	pinctrl_pca9555: pinmux_pinctrl_pca9555 {
 		pinctrl-single,pins = <
 			0x78 (PIN_OUTPUT_PULLUP | MUX_MODE7)	/* gpmc_be1n.gpio1_28 */
+		>;
+	};
+
+	mcasp0_pins: mcasp0_pins {
+		pinctrl-single,pins = <
+			0x190 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_ACLKX.MCASP0_ACLKX */
+			0x194 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_FSX.MCASP0_FSX */
+			0x198 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AXR0.MCASP0_AXR0 */
+			/*0x1a8 (PIN_INPUT_PULLDOWN | MUX_MODE0)	 MCASP0_AXR1.MCASP0_AXR1 */
+			0x1a0 (PIN_OUTPUT_PULLUP | MUX_MODE9) /*mcasp0_aclkr.gpio0_18*/
+			0x1ac (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* MCASP0_AHCLKX.MCASP0_AHCLKX */
 		>;
 	};
 };
