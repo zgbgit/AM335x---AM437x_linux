@@ -54,6 +54,56 @@
 			linux,default-trigger = "none";
 			default-state = "on";
 		};
+		
+		test1 {
+			label = "test1";
+			gpios = <&gpio1 8 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		
+		test2 {
+			label = "test2";
+			gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		test3 {
+			label = "test3";
+			gpios = <&gpio3 1 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		test4 {
+			label = "test4";
+			gpios = <&gpio3 2 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		test5 {
+			label = "test5";
+			gpios = <&gpio3 17 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		test6 {
+			label = "test6";
+			gpios = <&gpio3 19 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		test7 {
+			label = "test7";
+			gpios = <&gpio3 18 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
+		test8 {
+			label = "test8";
+			gpios = <&gpio3 20 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "none";
+			default-state = "off";
+		};
 	};
 
 	backlight: backlight {
@@ -156,7 +206,7 @@
 	status = "okay";
 };
 
-&uart2 {
+/*&uart2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart2_pins>;
 	status = "okay";
@@ -166,7 +216,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart4_pins>;
 	status = "okay";
-};
+};*/
 
 &dcan0 {
 		pinctrl-names = "default";
@@ -520,6 +570,17 @@
 		pinctrl-single,pins = <
 			0x088 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_csn3.gpio2_0 */
 			0x078 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ben1.gpio1_28 */
+			
+			0x1a0 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)		/* MCASP0_ACLKR.gpio3_18 */
+			0x19c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)		/* MCASP0_AHCLKR.gpio3_17 */
+			0x1a8 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)		/* MCASP0_AXR1.gpio3_20 */
+			0x1a4 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)		/* MCASP0_FSR.gpio3_19 */
+			
+			0x10c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gmii1_crs.gpio3_1 */
+			0x110 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* gmii1_rxerr.gpio3_2 */
+			
+			0x168 (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart0_ctsn.gpio1_8 */
+			0x16c (PIN_OUTPUT_PULLDOWN | MUX_MODE7)	/* uart0_rtsn.gpio1_9 */
 		>;
 	};
 

@@ -417,10 +417,10 @@
 	pinctrl-0 = <&pwm1_pins>;
 };
 
-&rtc {
+/*&rtc {
 	status = "okay";
 	ext-clk-src;
-};
+};*/
 
 &mac {
 	pinctrl-names = "default", "sleep";

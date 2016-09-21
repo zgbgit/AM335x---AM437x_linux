@@ -49,27 +49,6 @@ struct tda998x_priv {
 	struct drm_encoder *encoder;
 };
 
-static struct tda998x_encoder_params tda998x_pdata = 
-{	
-	.swap_b = 0x3,	
-	.mirr_b = 0x0,	
-	.swap_a = 0x2,	
-	.mirr_a = 0x0,	
-	.swap_d = 0x1,	
-	.mirr_d = 0x0,	
-	.swap_c = 0x0,	
-	.mirr_c = 0x0,	
-	.swap_f = 0x5,	
-	.mirr_f = 0x0,	
-	.swap_e = 0x4,	
-	.mirr_e = 0x0,	
-	.audio_cfg = 0x3,	/* I2S mode */	
-	.audio_clk_cfg = 1,	/* select clock pin */	
-	.audio_frame[1] = 1,	/* channels - 1 */	
-	.audio_format = AFMT_I2S,	
-	.audio_sample_rate = 48000,
-};
-
 #define to_tda998x_priv(x)  ((struct tda998x_priv *)to_encoder_slave(x)->slave_priv)
 
 /* The TDA9988 series of devices use a paged register scheme.. to simplify
@@ -627,6 +606,8 @@ static void
 tda998x_write_if(struct tda998x_priv *priv, uint8_t bit, uint16_t addr,
 		 uint8_t *buf, size_t size)
 {
+	buf[PB(0)] = tda998x_cksum(buf, size);
+
 	reg_clear(priv, REG_DIP_IF_FLAGS, bit);
 	reg_write_range(priv, addr, buf, size);
 	reg_set(priv, REG_DIP_IF_FLAGS, bit);
@@ -646,8 +627,6 @@ tda998x_write_aif(struct tda998x_priv *priv, struct tda998x_encoder_params *p)
 	buf[PB(4)] = p->audio_frame[4];
 	buf[PB(5)] = p->audio_frame[5] & 0xf8; /* DM_INH + LSV */
 
-	buf[PB(0)] = tda998x_cksum(buf, sizeof(buf));
-
 	tda998x_write_if(priv, DIP_IF_FLAGS_IF4, REG_IF4_HB0, buf,
 			 sizeof(buf));
 }
@@ -664,7 +643,7 @@ tda998x_write_avi(struct tda998x_priv *priv, struct drm_display_mode *mode)
 	buf[PB(1)] = HDMI_SCAN_MODE_UNDERSCAN;
 	buf[PB(2)] = HDMI_ACTIVE_ASPECT_PICTURE;
 	buf[PB(3)] = HDMI_QUANTIZATION_RANGE_FULL << 2;
-	buf[PB(4)] = 8;//drm_match_cea_mode(mode);
+	buf[PB(4)] = drm_match_cea_mode(mode);
 
 	tda998x_write_if(priv, DIP_IF_FLAGS_IF2, REG_IF2_HB0, buf,
 			 sizeof(buf));
@@ -726,7 +705,7 @@ tda998x_configure_audio(struct tda998x_priv *priv,
 	 * assume 100MHz requires larger divider.
 	 */
 	adiv = AUDIO_DIV_SERCLK_8;
-	if (0)
+	if (mode->clock > 100000)
 		adiv++;			/* AUDIO_DIV_SERCLK_16 */
 
 	/* S/PDIF asks for a larger divider */
@@ -797,7 +776,6 @@ static void tda998x_encoder_set_config(struct tda998x_priv *priv,
 static void tda998x_encoder_dpms(struct tda998x_priv *priv, int mode)
 {
 	/* we only care about on or off: */
-
 	if (mode != DRM_MODE_DPMS_ON)
 		mode = DRM_MODE_DPMS_OFF;
 
@@ -872,7 +850,6 @@ tda998x_encoder_mode_set(struct tda998x_priv *priv,
 	uint16_t de_pix_s, de_pix_e;
 	uint8_t reg, div, rep;
 
-
 	/*
 	 * Internally TDA998x is using ITU-R BT.656 style sync but
 	 * we get VESA style sync. TDA998x is using a reference pixel
@@ -942,52 +919,52 @@ tda998x_encoder_mode_set(struct tda998x_priv *priv,
 	}
 
 	/* mute the audio FIFO: */
-	//reg_set(priv, REG_AIP_CNTRL_0, AIP_CNTRL_0_RST_FIFO);
+	reg_set(priv, REG_AIP_CNTRL_0, AIP_CNTRL_0_RST_FIFO);
 
 	/* set HDMI HDCP mode off: */
-	//reg_write(priv, REG_TBG_CNTRL_1, TBG_CNTRL_1_DWIN_DIS);
-	//reg_clear(priv, REG_TX33, TX33_HDMI);
-	//reg_write(priv, REG_ENC_CNTRL, ENC_CNTRL_CTL_CODE(0));
+	reg_write(priv, REG_TBG_CNTRL_1, TBG_CNTRL_1_DWIN_DIS);
+	reg_clear(priv, REG_TX33, TX33_HDMI);
+	reg_write(priv, REG_ENC_CNTRL, ENC_CNTRL_CTL_CODE(0));
 
 	/* no pre-filter or interpolator: */
-	//reg_write(priv, REG_HVF_CNTRL_0, HVF_CNTRL_0_PREFIL(0) |
-	//		HVF_CNTRL_0_INTPOL(0));
-	//reg_write(priv, REG_VIP_CNTRL_5, VIP_CNTRL_5_SP_CNT(0));
-	//reg_write(priv, REG_VIP_CNTRL_4, VIP_CNTRL_4_BLANKIT(0) |
-	//		VIP_CNTRL_4_BLC(0));
+	reg_write(priv, REG_HVF_CNTRL_0, HVF_CNTRL_0_PREFIL(0) |
+			HVF_CNTRL_0_INTPOL(0));
+	reg_write(priv, REG_VIP_CNTRL_5, VIP_CNTRL_5_SP_CNT(0));
+	reg_write(priv, REG_VIP_CNTRL_4, VIP_CNTRL_4_BLANKIT(0) |
+			VIP_CNTRL_4_BLC(0));
 
-	//reg_clear(priv, REG_PLL_SERIAL_1, PLL_SERIAL_1_SRL_MAN_IZ);
-	//reg_clear(priv, REG_PLL_SERIAL_3, PLL_SERIAL_3_SRL_CCIR |
-	//				  PLL_SERIAL_3_SRL_DE);
-	//reg_write(priv, REG_SERIALIZER, 0);
-	//reg_write(priv, REG_HVF_CNTRL_1, HVF_CNTRL_1_VQR(0));
+	reg_clear(priv, REG_PLL_SERIAL_1, PLL_SERIAL_1_SRL_MAN_IZ);
+	reg_clear(priv, REG_PLL_SERIAL_3, PLL_SERIAL_3_SRL_CCIR |
+					  PLL_SERIAL_3_SRL_DE);
+	reg_write(priv, REG_SERIALIZER, 0);
+	reg_write(priv, REG_HVF_CNTRL_1, HVF_CNTRL_1_VQR(0));
 
 	/* TODO enable pixel repeat for pixel rates less than 25Msamp/s */
-	//rep = 0;
-	//reg_write(priv, REG_RPT_CNTRL, 0);
-	//reg_write(priv, REG_SEL_CLK, SEL_CLK_SEL_VRF_CLK(0) |
-	//		SEL_CLK_SEL_CLK1 | SEL_CLK_ENA_SC_CLK);
+	rep = 0;
+	reg_write(priv, REG_RPT_CNTRL, 0);
+	reg_write(priv, REG_SEL_CLK, SEL_CLK_SEL_VRF_CLK(0) |
+			SEL_CLK_SEL_CLK1 | SEL_CLK_ENA_SC_CLK);
 
-	//reg_write(priv, REG_PLL_SERIAL_2, PLL_SERIAL_2_SRL_NOSC(div) |
-	//		PLL_SERIAL_2_SRL_PR(rep));
+	reg_write(priv, REG_PLL_SERIAL_2, PLL_SERIAL_2_SRL_NOSC(div) |
+			PLL_SERIAL_2_SRL_PR(rep));
 
 	/* set color matrix bypass flag: */
-	//reg_write(priv, REG_MAT_CONTRL, MAT_CONTRL_MAT_BP |
-	//			MAT_CONTRL_MAT_SC(1));
+	reg_write(priv, REG_MAT_CONTRL, MAT_CONTRL_MAT_BP |
+				MAT_CONTRL_MAT_SC(1));
 
 	/* set BIAS tmds value: */
-	//reg_write(priv, REG_ANA_GENERAL, 0x09);
+	reg_write(priv, REG_ANA_GENERAL, 0x09);
 
 	/*
 	 * Sync on rising HSYNC/VSYNC
 	 */
-	//reg = VIP_CNTRL_3_SYNC_HS;
+	reg = VIP_CNTRL_3_SYNC_HS;
 
 	/*
 	 * TDA19988 requires high-active sync at input stage,
 	 * so invert low-active sync provided by master encoder here
 	 */
-	/*if (mode->flags & DRM_MODE_FLAG_NHSYNC)
+	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
 		reg |= VIP_CNTRL_3_H_TGL;
 	if (mode->flags & DRM_MODE_FLAG_NVSYNC)
 		reg |= VIP_CNTRL_3_V_TGL;
@@ -1013,26 +990,26 @@ tda998x_encoder_mode_set(struct tda998x_priv *priv,
 	reg_write16(priv, REG_VWIN_START_2_MSB, vwin2_line_s);
 	reg_write16(priv, REG_VWIN_END_2_MSB, vwin2_line_e);
 	reg_write16(priv, REG_DE_START_MSB, de_pix_s);
-	reg_write16(priv, REG_DE_STOP_MSB, de_pix_e);*/
+	reg_write16(priv, REG_DE_STOP_MSB, de_pix_e);
 
 	if (priv->rev == TDA19988) {
 		/* let incoming pixels fill the active space (if any) */
-		//reg_write(priv, REG_ENABLE_SPACE, 0x00);
+		reg_write(priv, REG_ENABLE_SPACE, 0x00);
 	}
 
 	/*
 	 * Always generate sync polarity relative to input sync and
 	 * revert input stage toggled sync at output stage
 	 */
-	/*reg = TBG_CNTRL_1_DWIN_DIS | TBG_CNTRL_1_TGL_EN;
+	reg = TBG_CNTRL_1_DWIN_DIS | TBG_CNTRL_1_TGL_EN;
 	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
 		reg |= TBG_CNTRL_1_H_TGL;
 	if (mode->flags & DRM_MODE_FLAG_NVSYNC)
 		reg |= TBG_CNTRL_1_V_TGL;
-	reg_write(priv, REG_TBG_CNTRL_1, reg);*/
+	reg_write(priv, REG_TBG_CNTRL_1, reg);
 
 	/* must be last register set: */
-	//reg_write(priv, REG_TBG_CNTRL_0, 0);
+	reg_write(priv, REG_TBG_CNTRL_0, 0);
 
 	/* Only setup the info frames if the sink is HDMI */
 	if (priv->is_hdmi_sink) {
@@ -1048,13 +1025,12 @@ tda998x_encoder_mode_set(struct tda998x_priv *priv,
 			tda998x_configure_audio(priv, adjusted_mode,
 						&priv->params);
 	}
-	
 }
 
 static enum drm_connector_status
 tda998x_encoder_detect(struct tda998x_priv *priv)
 {
-	uint8_t val = 3;//cec_read(priv, REG_CEC_RXSHPDLEV);
+	uint8_t val = cec_read(priv, REG_CEC_RXSHPDLEV);
 
 	return (val & CEC_RXSHPDLEV_HPD) ? connector_status_connected :
 			connector_status_disconnected;
@@ -1123,13 +1099,13 @@ tda998x_encoder_get_modes(struct tda998x_priv *priv,
 	struct edid *edid;
 	int n;
 
-	//if (priv->rev == TDA19988)
-	//	reg_clear(priv, REG_TX4, TX4_PD_RAM);
+	if (priv->rev == TDA19988)
+		reg_clear(priv, REG_TX4, TX4_PD_RAM);
 
-	//edid = drm_do_get_edid(connector, read_edid_block, priv);
+	edid = drm_do_get_edid(connector, read_edid_block, priv);
 
-	//if (priv->rev == TDA19988)
-	//	reg_set(priv, REG_TX4, TX4_PD_RAM);
+	if (priv->rev == TDA19988)
+		reg_set(priv, REG_TX4, TX4_PD_RAM);
 
 	if (!edid) {
 		dev_warn(&priv->hdmi->dev, "failed to read EDID\n");
@@ -1140,13 +1116,13 @@ tda998x_encoder_get_modes(struct tda998x_priv *priv,
 	n = drm_add_edid_modes(connector, edid);
 	priv->is_hdmi_sink = drm_detect_hdmi_monitor(edid);
 	kfree(edid);
+
 	return n;
 }
 
 static void tda998x_encoder_set_polling(struct tda998x_priv *priv,
 					struct drm_connector *connector)
 {
-
 	if (priv->hdmi->irq)
 		connector->polled = DRM_CONNECTOR_POLL_HPD;
 	else
@@ -1265,35 +1241,35 @@ static int tda998x_create(struct i2c_client *client, struct tda998x_priv *priv)
 	priv->current_page = 0xff;
 	priv->hdmi = client;
 	/* CEC I2C address bound to TDA998x I2C addr by configuration pins */
-	//cec_addr = 0x34 + (client->addr & 0x03);
-	//priv->cec = i2c_new_dummy(client->adapter, cec_addr);
-	//if (!priv->cec)
-	//	return -ENODEV;
+	cec_addr = 0x34 + (client->addr & 0x03);
+	priv->cec = i2c_new_dummy(client->adapter, cec_addr);
+	if (!priv->cec)
+		return -ENODEV;
 
 	priv->dpms = DRM_MODE_DPMS_OFF;
 
 	mutex_init(&priv->mutex);	/* protect the page access */
 
 	/* wake up the device: */
-	//cec_write(priv, REG_CEC_ENAMODS,
-	//		CEC_ENAMODS_EN_RXSENS | CEC_ENAMODS_EN_HDMI);
+	cec_write(priv, REG_CEC_ENAMODS,
+			CEC_ENAMODS_EN_RXSENS | CEC_ENAMODS_EN_HDMI);
 
-	//tda998x_reset(priv);
+	tda998x_reset(priv);
 
 	/* read version: */
-	/*/rev_lo = reg_read(priv, REG_VERSION_LSB);
-	//rev_hi = reg_read(priv, REG_VERSION_MSB);
+	rev_lo = reg_read(priv, REG_VERSION_LSB);
+	rev_hi = reg_read(priv, REG_VERSION_MSB);
 	if (rev_lo < 0 || rev_hi < 0) {
 		ret = rev_lo < 0 ? rev_lo : rev_hi;
 		goto fail;
 	}
 
-	priv->rev = rev_lo | rev_hi << 8;*/
+	priv->rev = rev_lo | rev_hi << 8;
 
 	/* mask off feature bits: */
-	//priv->rev &= ~0x30; /* not-hdcp and not-scalar bit */
+	priv->rev &= ~0x30; /* not-hdcp and not-scalar bit */
 
-	/*switch (priv->rev) {
+	switch (priv->rev) {
 	case TDA9989N2:
 		dev_info(&client->dev, "found TDA9989 n2");
 		break;
@@ -1310,20 +1286,20 @@ static int tda998x_create(struct i2c_client *client, struct tda998x_priv *priv)
 		dev_err(&client->dev, "found unsupported device: %04x\n",
 			priv->rev);
 		goto fail;
-	}*/
+	}
 
 	/* after reset, enable DDC: */
-	//reg_write(priv, REG_DDC_DISABLE, 0x00);
+	reg_write(priv, REG_DDC_DISABLE, 0x00);
 
 	/* set clock on DDC channel: */
-	//reg_write(priv, REG_TX3, 39);
+	reg_write(priv, REG_TX3, 39);
 
 	/* if necessary, disable multi-master: */
-	//if (priv->rev == TDA19989)
-		//reg_set(priv, REG_I2C_MASTER, I2C_MASTER_DIS_MM);
+	if (priv->rev == TDA19989)
+		reg_set(priv, REG_I2C_MASTER, I2C_MASTER_DIS_MM);
 
-	//cec_write(priv, REG_CEC_FRO_IM_CLK_CTRL,
-	//		CEC_FRO_IM_CLK_CTRL_GHOST_DIS | CEC_FRO_IM_CLK_CTRL_IMCLK_SEL);
+	cec_write(priv, REG_CEC_FRO_IM_CLK_CTRL,
+			CEC_FRO_IM_CLK_CTRL_GHOST_DIS | CEC_FRO_IM_CLK_CTRL_IMCLK_SEL);
 
 	/* initialize the optional IRQ */
 	if (client->irq) {
@@ -1356,7 +1332,7 @@ static int tda998x_create(struct i2c_client *client, struct tda998x_priv *priv)
 	}
 
 	/* enable EDID read irq: */
-	//reg_set(priv, REG_INT_FLAGS_2, INT_FLAGS_2_EDID_BLK_RD);
+	reg_set(priv, REG_INT_FLAGS_2, INT_FLAGS_2_EDID_BLK_RD);
 
 	if (!np)
 		return 0;		/* non-DT */
@@ -1368,14 +1344,15 @@ static int tda998x_create(struct i2c_client *client, struct tda998x_priv *priv)
 		priv->vip_cntrl_1 = video >> 8;
 		priv->vip_cntrl_2 = video;
 	}
+
 	return 0;
 
 fail:
 	/* if encoder_init fails, the encoder slave is never registered,
 	 * so cleanup here:
 	 */
-	//if (priv->cec)
-	//	i2c_unregister_device(priv->cec);
+	if (priv->cec)
+		i2c_unregister_device(priv->cec);
 	return -ENXIO;
 }
 
@@ -1400,6 +1377,7 @@ static int tda998x_encoder_init(struct i2c_client *client,
 
 	encoder_slave->slave_priv = priv;
 	encoder_slave->slave_funcs = &tda998x_encoder_slave_funcs;
+
 	return 0;
 }
 
@@ -1442,13 +1420,13 @@ static void tda998x_encoder2_mode_set(struct drm_encoder *encoder,
 }
 
 static const struct drm_encoder_helper_funcs tda998x_encoder_helper_funcs = {
-	//.dpms = tda998x_encoder2_dpms,
-	//.save = tda998x_encoder_save,
-	//.restore = tda998x_encoder_restore,
-	//.mode_fixup = tda998x_encoder_mode_fixup,
-	//.prepare = tda998x_encoder_prepare,
-	//.commit = tda998x_encoder_commit,
-	//.mode_set = tda998x_encoder2_mode_set,
+	.dpms = tda998x_encoder2_dpms,
+	.save = tda998x_encoder_save,
+	.restore = tda998x_encoder_restore,
+	.mode_fixup = tda998x_encoder_mode_fixup,
+	.prepare = tda998x_encoder_prepare,
+	.commit = tda998x_encoder_commit,
+	.mode_set = tda998x_encoder2_mode_set,
 };
 
 static void tda998x_encoder_destroy(struct drm_encoder *encoder)
@@ -1488,9 +1466,9 @@ tda998x_connector_best_encoder(struct drm_connector *connector)
 
 static
 const struct drm_connector_helper_funcs tda998x_connector_helper_funcs = {
-	//.get_modes = tda998x_connector_get_modes,
-	//.mode_valid = tda998x_connector_mode_valid,
-	//.best_encoder = tda998x_connector_best_encoder,
+	.get_modes = tda998x_connector_get_modes,
+	.mode_valid = tda998x_connector_mode_valid,
+	.best_encoder = tda998x_connector_best_encoder,
 };
 
 static enum drm_connector_status
@@ -1508,10 +1486,10 @@ static void tda998x_connector_destroy(struct drm_connector *connector)
 }
 
 static const struct drm_connector_funcs tda998x_connector_funcs = {
-	//.dpms = drm_helper_connector_dpms,
-	//.fill_modes = drm_helper_probe_single_connector_modes,
-	//.detect = tda998x_connector_detect,
-	//.destroy = tda998x_connector_destroy,
+	.dpms = drm_helper_connector_dpms,
+	.fill_modes = drm_helper_probe_single_connector_modes,
+	.detect = tda998x_connector_detect,
+	.destroy = tda998x_connector_destroy,
 };
 
 static int tda998x_bind(struct device *dev, struct device *master, void *data)
@@ -1598,216 +1576,15 @@ static const struct component_ops tda998x_ops = {
 	.unbind = tda998x_unbind,
 };
 
-/*static int
-tda998x_probe(struct i2c_client *client, const struct i2c_device_id *id)
-{
-	printk("-------------------------------------rdxy: tda998x_probe\n");
-	//return tda998x_bind();
-	return component_add(&client->dev, &tda998x_ops);
-}*/
-
-
 static int
 tda998x_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-	struct tda998x_priv *priv;
-	int ret;
-	struct device_node *np = client->dev.of_node;
-	u32 video;
-	int rev_lo, rev_hi;
-	unsigned short cec_addr;
-	struct drm_display_mode *adjusted_mode;
-
-
-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
-	
-	memcpy(&(priv->params), &tda998x_pdata, sizeof(tda998x_pdata));
-	
-	//printk("------------rdxy: priv->params->audio_sample_rate= %d--\n",priv->params.audio_sample_rate);
-		
-	priv->vip_cntrl_0 = VIP_CNTRL_0_SWAP_A(2) | VIP_CNTRL_0_SWAP_B(3);
-	priv->vip_cntrl_1 = VIP_CNTRL_1_SWAP_C(0) | VIP_CNTRL_1_SWAP_D(1);
-	priv->vip_cntrl_2 = VIP_CNTRL_2_SWAP_E(4) | VIP_CNTRL_2_SWAP_F(5);
-
-	priv->current_page = 0xff;
-	priv->hdmi = client;
-	/* CEC I2C address bound to TDA998x I2C addr by configuration pins */
-	cec_addr = 0x34 + (client->addr & 0x03);
-	priv->cec = i2c_new_dummy(client->adapter, cec_addr);
-	if (!priv->cec)
-		return -ENODEV;
-
-	priv->dpms = DRM_MODE_DPMS_OFF;
-
-	mutex_init(&priv->mutex);	/* protect the page access */
-
-	/* wake up the device: */
-	cec_write(priv, REG_CEC_ENAMODS,
-			CEC_ENAMODS_EN_RXSENS | CEC_ENAMODS_EN_HDMI);
-	tda998x_reset(priv);
-	/* read version: */
-	rev_lo = reg_read(priv, REG_VERSION_LSB);
-	rev_hi = reg_read(priv, REG_VERSION_MSB);
-	if (rev_lo < 0 || rev_hi < 0) {
-		ret = rev_lo < 0 ? rev_lo : rev_hi;
-		goto fail;
-	}
-
-	priv->rev = rev_lo | rev_hi << 8;
-
-	/* mask off feature bits: */
-	priv->rev &= ~0x30; /* not-hdcp and not-scalar bit */
-
-	switch (priv->rev) {
-	case TDA9989N2:
-		dev_info(&client->dev, "found TDA9989 n2");
-		break;
-	case TDA19989:
-		dev_info(&client->dev, "found TDA19989");
-		break;
-	case TDA19989N2:
-		dev_info(&client->dev, "found TDA19989 n2");
-		break;
-	case TDA19988:
-		dev_info(&client->dev, "found TDA19988");
-		break;
-	default:
-		dev_err(&client->dev, "found unsupported device: %04x\n",
-			priv->rev);
-		goto fail;
-	}
-
-	/* after reset, enable DDC: */
-	reg_write(priv, REG_DDC_DISABLE, 0x00);
-
-	/* set clock on DDC channel: */
-	reg_write(priv, REG_TX3, 39);
-
-	/* if necessary, disable multi-master: */
-	if (priv->rev == TDA19989)
-		reg_set(priv, REG_I2C_MASTER, I2C_MASTER_DIS_MM);
-
-	cec_write(priv, REG_CEC_FRO_IM_CLK_CTRL,
-			CEC_FRO_IM_CLK_CTRL_GHOST_DIS | CEC_FRO_IM_CLK_CTRL_IMCLK_SEL);
-	reg_set(priv, REG_INT_FLAGS_2, INT_FLAGS_2_EDID_BLK_RD);
-	if (priv->rev == TDA19988)
-		reg_clear(priv, REG_TX4, TX4_PD_RAM);
-	if (priv->rev == TDA19988)
-		reg_set(priv, REG_TX4, TX4_PD_RAM);
-	
-	
-	/* mute the audio FIFO: */
-	reg_set(priv, REG_AIP_CNTRL_0, AIP_CNTRL_0_RST_FIFO);
-
-	/* set HDMI HDCP mode off: */
-	reg_write(priv, REG_TBG_CNTRL_1, TBG_CNTRL_1_DWIN_DIS);
-	reg_clear(priv, REG_TX33, TX33_HDMI);
-	reg_write(priv, REG_ENC_CNTRL, ENC_CNTRL_CTL_CODE(0));
-
-	/* no pre-filter or interpolator: */
-	reg_write(priv, REG_HVF_CNTRL_0, HVF_CNTRL_0_PREFIL(0) |
-			HVF_CNTRL_0_INTPOL(0));
-	reg_write(priv, REG_VIP_CNTRL_5, VIP_CNTRL_5_SP_CNT(0));
-	reg_write(priv, REG_VIP_CNTRL_4, VIP_CNTRL_4_BLANKIT(0) |
-			VIP_CNTRL_4_BLC(0));
-
-	reg_clear(priv, REG_PLL_SERIAL_1, PLL_SERIAL_1_SRL_MAN_IZ);
-	reg_clear(priv, REG_PLL_SERIAL_3, PLL_SERIAL_3_SRL_CCIR |
-					  PLL_SERIAL_3_SRL_DE);
-	reg_write(priv, REG_SERIALIZER, 0);
-	reg_write(priv, REG_HVF_CNTRL_1, HVF_CNTRL_1_VQR(0));
-	
-	/* TODO enable pixel repeat for pixel rates less than 25Msamp/s */
-	reg_write(priv, REG_RPT_CNTRL, 0);
-	reg_write(priv, REG_SEL_CLK, SEL_CLK_SEL_VRF_CLK(0) |
-			SEL_CLK_SEL_CLK1 | SEL_CLK_ENA_SC_CLK);
-	reg_write(priv, REG_PLL_SERIAL_2, 1);
-	/* set color matrix bypass flag: */
-	reg_write(priv, REG_MAT_CONTRL, MAT_CONTRL_MAT_BP |
-				MAT_CONTRL_MAT_SC(1));
-
-	/* set BIAS tmds value: */
-	reg_write(priv, REG_ANA_GENERAL, 0x09);
-	
-	/*
-	 * Sync on rising HSYNC/VSYNC
-	 */
-
-	/*
-	 * TDA19988 requires high-active sync at input stage,
-	 * so invert low-active sync provided by master encoder here
-	 */
-	reg_write(priv, REG_VIP_CNTRL_3, 0x26);
-
-	reg_write(priv, REG_VIDFORMAT, 0x00);
-	reg_write16(priv, REG_REFPIX_MSB, 0xa3);
-	reg_write16(priv, REG_REFLINE_MSB, 0x4);
-	reg_write16(priv, REG_NPIX_MSB, 0x540);
-	reg_write16(priv, REG_NLINE_MSB, 0x326);
-	reg_write16(priv, REG_VS_LINE_STRT_1_MSB, 0x3);
-	reg_write16(priv, REG_VS_PIX_STRT_1_MSB, 0x18);
-	reg_write16(priv, REG_VS_LINE_END_1_MSB, 0x9);
-	reg_write16(priv, REG_VS_PIX_END_1_MSB, 0x18);
-	reg_write16(priv, REG_VS_LINE_STRT_2_MSB, 0);
-	reg_write16(priv, REG_VS_PIX_STRT_2_MSB, 0);
-	reg_write16(priv, REG_VS_LINE_END_2_MSB, 0);
-	reg_write16(priv, REG_VS_PIX_END_2_MSB, 0);
-	reg_write16(priv, REG_HS_PIX_START_MSB, 0x18);
-	reg_write16(priv, REG_HS_PIX_STOP_MSB, 0xa0);
-	reg_write16(priv, REG_VWIN_START_1_MSB, 0x25);
-	reg_write16(priv, REG_VWIN_END_1_MSB, 0x325);
-	reg_write16(priv, REG_VWIN_START_2_MSB, 0);
-	reg_write16(priv, REG_VWIN_END_2_MSB, 0);
-	reg_write16(priv, REG_DE_START_MSB, 0x140);
-	reg_write16(priv, REG_DE_STOP_MSB, 0x540);
-
-	if (priv->rev == TDA19988) {
-		/* let incoming pixels fill the active space (if any) */
-		reg_write(priv, REG_ENABLE_SPACE, 0x00);
-	}
-
-	/*
-	 * Always generate sync polarity relative to input sync and
-	 * revert input stage toggled sync at output stage
-	 */
-	reg_write(priv, REG_TBG_CNTRL_1, 0x47);
-
-	/* must be last register set: */
-	reg_write(priv, REG_TBG_CNTRL_0, 0);
-
-	/* We need to turn HDMI HDCP stuff on to get audio through */		
-	//reg &= ~TBG_CNTRL_1_DWIN_DIS;		
-	reg_write(priv, REG_TBG_CNTRL_1, 0x4);		
-	reg_write(priv, REG_ENC_CNTRL, ENC_CNTRL_CTL_CODE(1));		
-	reg_set(priv, REG_TX33, TX33_HDMI);		
-	tda998x_write_avi(priv, adjusted_mode);		
-	if (priv->params.audio_cfg)			
-		tda998x_configure_audio(priv, adjusted_mode, &priv->params);
-	
-	/* enable video ports, audio will be enabled later */
-	reg_write(priv, REG_ENA_VP_0, 0xff);
-	reg_write(priv, REG_ENA_VP_1, 0xff);
-	reg_write(priv, REG_ENA_VP_2, 0xff);
-	/* set muxing after enabling ports: */
-	reg_write(priv, REG_VIP_CNTRL_0, priv->vip_cntrl_0);
-	reg_write(priv, REG_VIP_CNTRL_1, priv->vip_cntrl_1);
-	reg_write(priv, REG_VIP_CNTRL_2, priv->vip_cntrl_2);
-		
-	return 0;
-
-fail:	/* if encoder_init fails, the encoder slave is never registered,	 * so cleanup here:	 */	
-	if (priv->cec)		
-		i2c_unregister_device(priv->cec);	
-	return -ENXIO;
-
+	return component_add(&client->dev, &tda998x_ops);
 }
 
 static int tda998x_remove(struct i2c_client *client)
 {
-	//component_del(&client->dev, &tda998x_ops);
+	component_del(&client->dev, &tda998x_ops);
 	return 0;
 }
 
