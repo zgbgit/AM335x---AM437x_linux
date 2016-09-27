@@ -146,18 +146,18 @@
 		simple-audio-card,format = "i2s";
 		simple-audio-card,bitclock-master = <&sound_master>;
 		simple-audio-card,frame-master = <&sound_master>;
-		simple-audio-card,mclk-fs = <512>;
+		simple-audio-card,mclk-fs = <256>;
 		/*simple-audio-card,bitclock-inversion;*/
 
 		sound_master: simple-audio-card,cpu {
 			sound-dai = <&mcasp0>;
-			system-clock-frequency = <24000000>;
+			system-clock-frequency = <12000000>;
 			system-clock-direction = "out";
 		};
 
 		simple-audio-card,codec {
 			sound-dai = <&tas5731>;
-			system-clock-frequency = <24000000>;
+			system-clock-frequency = <12000000>;
 			system-clock-direction = "in";
 		};
 	};
