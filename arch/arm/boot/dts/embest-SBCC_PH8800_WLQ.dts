@@ -95,7 +95,7 @@
 	backlight: backlight {
 		compatible = "pwm-backlight";
 
-		pwms = <&ecap0 0 50000 PWM_POLARITY_INVERTED>;
+		pwms = <&ecap0 0 50000 0>;
 		brightness-levels = <0 30 60 90 120 150 180 210 255>;
 		default-brightness-level = <6>;
 	};
