@@ -1,0 +1,29 @@
+/*
+ * Copyright (C) 2015 Embest Technology Co., Ltd., - http://www.embest-tech.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This dts is for embest own product:
+ * SOM-PH8800 + BB-WLQ
+ */
+#include "embest-SBCC_PH8800_WLQ.dts"
+&lcd0{
+	panel-timing {
+		/*This is the timing for HDMI&VGA*/
+		clock-frequency = <65000000>;
+		hactive = <800>;
+		vactive = <600>;
+		hfront-porch = <40>;
+		hback-porch = <220>;
+		hsync-len = <60>;
+		vfront-porch = <7>;
+		vback-porch = <21>;
+		vsync-len = <10>;
+		hsync-active = <0>;
+		vsync-active = <0>;
+		de-active = <1>;
+		pixelclk-active = <1>;
+	};
+};
