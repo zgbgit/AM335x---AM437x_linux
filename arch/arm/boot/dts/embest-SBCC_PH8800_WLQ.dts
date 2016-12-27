@@ -362,6 +362,7 @@
 	vmmc-supply = <&dcdc4>;
 	bus-width = <4>;
 	cd-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>;
+	max-speed = <100000000>;
 };
 
 /* eMMC sits on mmc2 */
@@ -377,6 +378,7 @@
 	pinctrl-0 = <&emmc_pins_default>;
 	pinctrl-1 = <&emmc_pins_sleep>;
 	ti,non-removable;
+	max-speed = <100000000>;
 };
 	
 &mmc3 {
@@ -386,6 +388,7 @@
 	dma-names = "tx", "rx";
 	vmmc-supply = <&dcdc4>;
 	bus-width = <4>;
+	max-speed = <24000000>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mmc3_pins_default>;
 	pinctrl-1 = <&mmc3_pins_sleep>;

@@ -74,6 +74,7 @@ struct omap_hsmmc_platform_data {
 	int gpio_cd;			/* gpio (card detect) */
 	int gpio_cod;			/* gpio (cover detect) */
 	int gpio_wp;			/* gpio (write protect) */
+	int max_speed;
 
 	int (*set_power)(struct device *dev, int power_on, int vdd);
 	void (*remux)(struct device *dev, int power_on);
