@@ -1,11 +1,6 @@
 /*
  * Omnivision ov5640 CMOS Image Sensor driver
  *
- * Copyright (C) 2015 Texas Instruments, Inc.
- *
- * Benoit Parrot <bparrot@ti.com>
- * Lad, Prabhakar <prabhakar.csengg@gmail.com>
- *
  * This program is free software; you may redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; version 2 of the License.
@@ -36,7 +31,6 @@
 #include <linux/uaccess.h>
 #include <linux/videodev2.h>
 
-#include <media/media-entity.h>
 #include <linux/of_device.h>
 #include <linux/of_gpio.h>
 
@@ -53,18 +47,20 @@
 
 #define DRIVER_NAME "ov5640"
 
-#define REG_FORMAT_CTRL00                           0x4300
-#define REG_CHIP_ID_HIGH		0x300a
-#define REG_CHIP_ID_LOW			0x300b
+#define REG_FORMAT_CTRL00       	0x4300
+#define REG_CHIP_ID_HIGH			0x300a
+#define REG_CHIP_ID_LOW				0x300b
 
-#define TEST_PATTERN_ENABLE		BIT(7)
-#define VERTICAL_COLOR_BAR_MASK		0x53
+#define REG_NULL					0x0000	/* Array end token */
+#define ov5640_ID					0x5640
 
-#define REG_NULL			0x0000	/* Array end token */
-
-#define OV265X_ID(_msb, _lsb)		((_msb) << 8 | (_lsb))
-#define ov5640_ID			0x5640
-
+/* embest debug macro,0 is disable,1 is enable */
+#define DEBUG 1
+#if DEBUG
+#define embest_debug(format, ...) pr_err ( format, ## __VA_ARGS__)
+#else
+#define embest_debug(format, ...) do {} while (0)
+#endif
 
 static int pwn_gpio, rst_gpio;
 
@@ -116,9 +112,9 @@ struct ov5640 {
 	struct sensor_register *format_ctrl_regs;
 	struct ov5640_pll_ctrl pll;
 	struct v4l2_clk	*clk;
-
-
 	int streaming;
+	/* add a framerate here */
+	unsigned char frame_rate;
 };
 
 
@@ -214,7 +210,7 @@ static struct sensor_register ov5640_ini_vga[] = {
 };
 
 
-/* 640X480 VGA */
+/* 640X480 VGA 30fps*/
 static struct sensor_register ov5640_vga[] = {
 	{0x3c07, 0x08 }, {0x3820, 0x41 }, {0x3821, 0x07 },
 	{0x3814, 0x31 }, {0x3815, 0x31 }, {0x3800, 0x00 },
@@ -229,16 +225,16 @@ static struct sensor_register ov5640_vga[] = {
 	{0x4004, 0x02 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x03 }, {0x4407, 0x04 }, {0x460b, 0x35 },
 	{0x460c, 0x22 }, {0x4837, 0x22 }, {0x3824, 0x02 },
-	{0x5001, 0xa3 }, {0x3034, 0x1a }, {0x3035, 0x11 },
+	{0x5001, 0xa3 }, {0x3034, 0x1a }, 
 	{0x3036, 0x46 }, {0x3037, 0x13 }, {0x3503, 0x00 },
 	{ REG_NULL, 0x00 },
 
 };
 
 
-/* 1280X720 720p     1892 740   */
+/* 1280X720 720p     1892 740   30fps*/
 static struct sensor_register ov5640_720p[] = {
-	{0x3035, 0x21 }, {0x3036, 0x46 }, {0x3c07, 0x07 },
+	{0x3c07, 0x07 },
 	{0x3820, 0x41 }, {0x3821, 0x07 }, {0x3814, 0x31 },
 	{0x3815, 0x31 }, {0x3800, 0x00 }, {0x3801, 0x00 },
 	{0x3802, 0x00 }, {0x3803, 0xfa }, {0x3804, 0x0a },
@@ -272,7 +268,7 @@ static struct sensor_register ov5640_NTSC[] = {
 	{0x4004, 0x02 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x03 }, {0x4407, 0x04 }, {0x460b, 0x35 },
 	{0x460c, 0x22 }, {0x4837, 0x22 }, {0x3824, 0x02 },
-	{0x5001, 0xa3 }, {0x3034, 0x1a }, {0x3035, 0x11 },
+	{0x5001, 0xa3 }, {0x3034, 0x1a },
 	{0x3036, 0x46 }, {0x3037, 0x13 },{ REG_NULL, 0x00 },
 
 };
@@ -292,7 +288,7 @@ static struct sensor_register ov5640_PAL[] = {
 	{0x4004, 0x02 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x03 }, {0x4407, 0x04 }, {0x460b, 0x35 },
 	{0x460c, 0x22 }, {0x4837, 0x22 }, {0x3824, 0x02 },
-	{0x5001, 0xa3 }, {0x3034, 0x1a }, {0x3035, 0x11 },
+	{0x5001, 0xa3 }, {0x3034, 0x1a }, 
 	{0x3036, 0x46 }, {0x3037, 0x13 },{ REG_NULL, 0x00 },
 };
 
@@ -311,7 +307,7 @@ static struct sensor_register ov5640_QCIF[] = {
 	{0x4004, 0x02 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x03 }, {0x4407, 0x04 }, {0x460b, 0x35 },
 	{0x460c, 0x22 }, {0x4837, 0x22 }, {0x3824, 0x02 },
-	{0x5001, 0xa3 }, {0x3034, 0x1a }, {0x3035, 0x11 },
+	{0x5001, 0xa3 }, {0x3034, 0x1a }, 
 	{0x3036, 0x46 }, {0x3037, 0x13 },{ REG_NULL, 0x00 },
 };
 
@@ -330,8 +326,8 @@ static struct sensor_register ov5640_xga[] = {
 	{0x4004, 0x02 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x03 }, {0x4407, 0x04 }, {0x460b, 0x35 },
 	{0x460c, 0x20 }, {0x4837, 0x22 }, {0x3824, 0x01 },
-	{0x5001, 0xa3 }, {0x3034, 0x1a }, {0x3035, 0x21 },
-	{0x3036, 0x46 }, {0x3037, 0x13 },{ REG_NULL, 0x00 },
+	{0x5001, 0xa3 }, {0x3034, 0x1a },{0x3037, 0x13 },
+	{ REG_NULL, 0x00 },
 };
 
 /* 1920X1080 1080p */
@@ -354,7 +350,6 @@ static struct sensor_register ov5640_1080p[] = {
 
 };
 
-
 /* 320X240 QVGA */
 static  struct sensor_register ov5640_qvga[] = {
 	{0x3c07, 0x08 }, {0x3820, 0x41 }, {0x3821, 0x07 },
@@ -370,9 +365,8 @@ static  struct sensor_register ov5640_qvga[] = {
 	{0x4004, 0x02 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x03 }, {0x4407, 0x04 }, {0x460b, 0x35 },
 	{0x460c, 0x22 }, {0x4837, 0x22 }, {0x3824, 0x02 },
-	{0x5001, 0xa3 }, {0x3034, 0x1a }, {0x3035, 0x11 },
-	{0x3036, 0x46 }, {0x3037, 0x13 },
-	{ REG_NULL, 0x00 },
+	{0x5001, 0xa3 }, {0x3034, 0x1a },{0x3036, 0x46 }, 
+	{0x3037, 0x13 },{ REG_NULL, 0x00 },
 };
 
 /* 2592X1944 QSXGA */
@@ -390,45 +384,8 @@ static struct sensor_register ov5640_QSXGA[] = {
 	{0x4004, 0x06 }, {0x3002, 0x1c }, {0x3006, 0xc3 },
 	{0x4713, 0x02 }, {0x4407, 0x0c }, {0x460b, 0x37 },
 	{0x460c, 0x20 }, {0x4837, 0x2c }, {0x3824, 0x01 },
-	{0x5001, 0x83 }, {0x3034, 0x1a }, {0x3035, 0x21 },
-	{0x3036, 0x46 }, {0x3037, 0x13 },{ REG_NULL, 0x00 },
-};
-
-
-static const struct pll_ctrl_reg ctrl3[] = {
-	{ 1, 0x00 },
-	{ 2, 0x02 },
-	{ 3, 0x03 },
-	{ 4, 0x06 },
-	{ 6, 0x0d },
-	{ 8, 0x0e },
-	{ 12, 0x0f },
-	{ 16, 0x12 },
-	{ 24, 0x13 },
-	{ 32, 0x16 },
-	{ 48, 0x1b },
-	{ 64, 0x1e },
-	{ 96, 0x1f },
-	{ 0, 0x00 },
-};
-
-static const struct pll_ctrl_reg ctrl1[] = {
-	{ 2, 0x10 },
-	{ 4, 0x20 },
-	{ 6, 0x30 },
-	{ 8, 0x40 },
-	{ 10, 0x50 },
-	{ 12, 0x60 },
-	{ 14, 0x70 },
-	{ 16, 0x80 },
-	{ 18, 0x90 },
-	{ 20, 0xa0 },
-	{ 22, 0xb0 },
-	{ 24, 0xc0 },
-	{ 26, 0xd0 },
-	{ 28, 0xe0 },
-	{ 30, 0xf0 },
-	{ 0, 0x00 },
+	{0x5001, 0x83 }, {0x3034, 0x1a }, {0x3036, 0x46 }, 
+	{0x3037, 0x13 },{ REG_NULL, 0x00 },
 };
 
 static const struct ov5640_framesize ov5640_framesizes[] = {
@@ -528,7 +485,6 @@ static inline struct ov5640 *to_ov5640(struct v4l2_subdev *sd)
 /* sensor register write */
 static int ov5640_write(struct i2c_client *client, u16 reg, u8 val)
 {
-
 	int ret;
 	unsigned char data[3] = { reg >> 8, reg & 0xff, val };
 
@@ -543,13 +499,11 @@ static int ov5640_write(struct i2c_client *client, u16 reg, u8 val)
 	}
 
 	return 0;
-
 }
 
 /* sensor register read */
 static int ov5640_read(struct i2c_client *client, u16 reg, u8 *val)
 {
-
 	int ret;
 	/* We have 16-bit i2c addresses - care for endianness */
 	unsigned char data[2] = { reg >> 8, reg & 0xff };
@@ -557,7 +511,7 @@ static int ov5640_read(struct i2c_client *client, u16 reg, u8 *val)
 	if(client == NULL)
 		return  -EIO;
 
-	printk("[%s][%d]---hul debug --client[%x] \n",__FUNCTION__,__LINE__,client);
+	embest_debug("embest_debug: %s(%d)",__FUNCTION__,__LINE__);
 
 	ret = i2c_master_send(client, data, 2);
 	if (ret < 2) {
@@ -585,79 +539,13 @@ static int ov5640_write_array(struct i2c_client *client,
 		ret = ov5640_write(client, regs[i].addr, regs[i].value);
 
 		if(i%3)
-		printk("0x%x  0x%x \t",regs[i].addr, regs[i].value);
+		embest_debug("0x%x  0x%x \t",regs[i].addr, regs[i].value);
 		else
-		printk("0x%x  0x%x \n",regs[i].addr, regs[i].value);
+		embest_debug("0x%x  0x%x \n",regs[i].addr, regs[i].value);
 
 	}
 	return ret;
 }
-
-static void ov5640_pll_calc_params(struct ov5640 *ov5640)
-{
-	const struct ov5640_platform_data *pdata = ov5640->pdata;
-	u8 ctrl1_reg = 0, ctrl2_reg = 0, ctrl3_reg = 0;
-	struct i2c_client *client = ov5640->client;
-	unsigned int desired = pdata->link_frequency;
-	u32 s_prediv = 1, s_postdiv = 1, s_mult = 1;
-	u32 prediv, postdiv, mult;
-	u32 bestdelta = -1;
-	u32 delta, actual;
-	int i, j;
-
-	for (i = 0; ctrl1[i].div != 0; i++) {
-		postdiv = ctrl1[i].div;
-		for (j = 0; ctrl3[j].div != 0; j++) {
-			prediv = ctrl3[j].div;
-			for (mult = 1; mult <= 63; mult++) {
-				actual  = ov5640->xvclk_frequency;
-				actual *= mult;
-				actual /= prediv;
-				actual /= postdiv;
-				delta = actual - desired;
-				delta = abs(delta);
-
-				if ((delta < bestdelta) || (bestdelta == -1)) {
-					bestdelta = delta;
-					s_mult    = mult;
-					s_prediv  = prediv;
-					s_postdiv = postdiv;
-					ctrl1_reg = ctrl1[i].reg;
-					ctrl2_reg = mult;
-					ctrl3_reg = ctrl3[j].reg;
-				}
-			}
-		}
-	}
-
-	ov5640->pll.ctrl1 = ctrl1_reg;
-	ov5640->pll.ctrl2 = ctrl2_reg;
-	ov5640->pll.ctrl3 = ctrl3_reg;
-
-	dev_dbg(&client->dev,
-		"Actual reg config: ctrl1_reg: %02x ctrl2_reg: %02x ctrl3_reg: %02x\n",
-		ctrl1_reg, ctrl2_reg, ctrl3_reg);
-}
-
-static int ov5640_set_pixel_clock(struct ov5640 *ov5640)
-{
-	struct i2c_client *client = ov5640->client;
-/*	struct sensor_register pll_regs[] = {
-		{REG_SC_PLL_CTRL1, ov5640->pll.ctrl1},
-		{REG_SC_PLL_CTRL2, ov5640->pll.ctrl2},
-		{REG_SC_PLL_CTRL3, ov5640->pll.ctrl3},
-		{REG_NULL, 0x00},
-	};
-
-	dev_dbg(&client->dev, "%s\n", __func__);
-
-	return ov5640_write_array(client, pll_regs);
-
-*/
-
-	return 0;
-
-};
 
 static void ov5640_get_default_format(struct v4l2_mbus_framefmt *format)
 {
@@ -666,18 +554,6 @@ static void ov5640_get_default_format(struct v4l2_mbus_framefmt *format)
 	format->colorspace = V4L2_COLORSPACE_SRGB;
 	format->code = ov5640_formats[0].code;
 	format->field = V4L2_FIELD_NONE;
-}
-
-static void ov5640_set_streaming(struct ov5640 *ov5640, int on)
-{
-	struct i2c_client *client = ov5640->client;
-	int ret;
-
-	on = !!on;
-
-	dev_dbg(&client->dev, "%s: on: %d\n", __func__, on);
-
-
 }
 
 static int ov5640_init(struct v4l2_subdev *sd, u32 val)
@@ -696,6 +572,9 @@ static int ov5640_init(struct v4l2_subdev *sd, u32 val)
 
 	ret = ov5640_write_array(client, ov5640_ini_vga);
 
+	/* disable the device, wait app to enable */
+	ov5640_write(client,0x3007, 0x00);
+	msleep(10);
 	return ret;
 }
 
@@ -745,6 +624,15 @@ static int ov5640_enum_frame_sizes(struct v4l2_subdev *sd,
 	return 0;
 }
 
+/*!
+ * ov5640_get_fmt - get the ov5640 format code
+ *			   width and height
+ * @sd: pointer to standard V4L2 subdev structure
+ * @cfg: pointer to standard v4l2_subdev_pad_config structure
+ * @fmt: pointer to standard v4l2_subdev_format structure
+ *
+ * Return 0.
+ */
 static int ov5640_get_fmt(struct v4l2_subdev *sd,
 			  struct v4l2_subdev_pad_config *cfg,
 			  struct v4l2_subdev_format *fmt)
@@ -802,6 +690,75 @@ static void __ov5640_try_frame_size(struct v4l2_mbus_framefmt *mf,
 		*size = match;
 }
 
+static int ov5640_set_format(struct ov5640 *ov5640)
+{
+	return ov5640_write_array(ov5640->client, ov5640->format_ctrl_regs);
+}
+
+static int ov5640_set_frame_size(struct ov5640 *ov5640)
+{
+	return ov5640_write_array(ov5640->client, ov5640->frame_size->regs);
+}
+
+/*!
+ * ov5640_set_framerate - set the ov5640 framerate
+ *			   
+ * @ov5640: pointer to ov5640 structure
+ *
+ * Return 0 if successful, otherwise -EINVAL.
+ */
+static int ov5640_set_framerate(struct ov5640 *ov5640)
+{
+	struct i2c_client *client = ov5640->client;
+	u8 reg_read_PLL_ctrl1;
+
+	if(ov5640->frame_rate > 30)
+	{
+		return -EINVAL;
+	}
+	if(ov5640->frame_rate > 15)
+	{
+		if(ov5640->frame_size->width == 1024)
+		{
+			ov5640_write(client, 0x3035, 0x21);
+			ov5640_write(client, 0x3036, 0x69);
+		}else if(ov5640->frame_size->width == 1280){
+			ov5640_write(client, 0x3035, 0x21);
+			ov5640_write(client, 0x3036, 0x69);
+		}else{
+			ov5640_write(client, 0x3035, 0x11);
+			ov5640_write(client, 0x3036, 0x46);
+		}
+	}
+	else{
+		if(ov5640->frame_size->width == 1024)
+		{
+			ov5640_write(client, 0x3035, 0x21);
+			ov5640_write(client, 0x3036, 0x46);
+		}else if(ov5640->frame_size->width == 1280){
+			ov5640_write(client, 0x3035, 0x41);
+			ov5640_write(client, 0x3036, 0x69);
+		}else{
+			ov5640_write(client, 0x3035, 0x21);
+			ov5640_write(client, 0x3036, 0x46);
+		}
+	}
+	ov5640_read(client, 0x3035, &reg_read_PLL_ctrl1);
+	embest_debug("zgb ov5640_set_framerate=%dfps reg_read_PLL_ctrl1=0x%x \n",ov5640->frame_rate,reg_read_PLL_ctrl1);
+
+	return 0;
+}
+
+
+/*!
+ * ov5640_set_fmt - set the ov5640 format code
+ *			   width and height
+ * @sd: pointer to standard V4L2 subdev structure
+ * @cfg: pointer to standard v4l2_subdev_pad_config structure
+ * @fmt: pointer to standard v4l2_subdev_format structure
+ *
+ * Return 0 if successful, otherwise -EINVAL.
+ */
 static int ov5640_set_fmt(struct v4l2_subdev *sd,
 			  struct v4l2_subdev_pad_config *cfg,
 			  struct v4l2_subdev_format *fmt)
@@ -815,13 +772,7 @@ static int ov5640_set_fmt(struct v4l2_subdev *sd,
 
 	dev_dbg(&client->dev, "ov5640_set_fmt\n");
 
-
-	printk("[%s][%d]---hul debug ---mf size : %d X %d\n",__FUNCTION__,__LINE__,mf->width , mf->height);
-
 	__ov5640_try_frame_size(mf, &size);
-
-	printk("[%s][%d]---hul debug --- size : %d X %d\n",__FUNCTION__,__LINE__,size->width , size->height);
-
 
 	while (--index >= 0)
 		if (ov5640_formats[index].code == mf->code)
@@ -856,78 +807,65 @@ static int ov5640_set_fmt(struct v4l2_subdev *sd,
 			val = ov5640->pdata->link_frequency / 2;
 		else
 			val = ov5640->pdata->link_frequency;
-
-		ret = v4l2_ctrl_s_ctrl_int64(ov5640->link_frequency, val);
-		if (ret < 0)
-			dev_warn(&client->dev,
-				 "failed to set link_frequency rate (%d)\n",
-				 ret);
 	}
 
 	mutex_unlock(&ov5640->lock);
+
+	ov5640_set_framerate(ov5640);
+	ov5640_set_frame_size(ov5640);
+	ov5640_set_format(ov5640);
+	
 	return ret;
 }
 
-static int ov5640_set_frame_size(struct ov5640 *ov5640)
-{
-	struct i2c_client *client = ov5640->client;
-
-	printk("[%s][%d]---hul debug ---[%d X %d]\n",__FUNCTION__,__LINE__,ov5640->frame_size->width,
-	ov5640->frame_size->height);
-
-
-	return ov5640_write_array(ov5640->client, ov5640->frame_size->regs);
-}
-
-static int ov5640_set_format(struct ov5640 *ov5640)
-{
-	struct i2c_client *client = ov5640->client;
-
-	dev_dbg(&client->dev, "%s\n", __func__);
-
-	return ov5640_write_array(ov5640->client, ov5640->format_ctrl_regs);
-}
-
-static int ov5640_s_fmt(struct v4l2_subdev *sd,
-			struct v4l2_mbus_framefmt *mf)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	struct ov5640 *priv = to_ov5640(client);
-
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
-
-
-	return 0;
-}
+/*!
+ * ov5640_g_parm - get the ov5640 framerate
+ *			   
+ * @sd: pointer to standard V4L2 subdev structure
+ * @a: pointer to standard V4L2 streamparm structure
+ *
+ * Return 0 if successful, otherwise -EINVAL.
+ */
 static int ov5640_g_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *a)
 {
+	struct ov5640 *ov5640 = to_ov5640(sd);
+	
+	embest_debug("embest_debug :%s(%d)\n",__FUNCTION__,__LINE__);
 
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
-
+	if( ov5640->frame_rate > 30 )
+	{
+		pr_err("[%s][%d]Invaild framerate.\n",__FUNCTION__,__LINE__);
+		return -EINVAL;
+	}
+	a->parm.capture.timeperframe.denominator = ((u32)ov5640->frame_rate) & 0x0000ffff;
+	embest_debug("zgb ov5640_g_parm frame_rate = %d\n",a->parm.capture.timeperframe.denominator);
 	return 0;
 
 }
 
+/*!
+ * ov5640_s_parm - set the ov5640 framerate
+ *			   
+ * @sd: pointer to standard V4L2 subdev structure
+ * @a: pointer to standard V4L2 streamparm structure
+ *
+ * Return 0 if successful, otherwise -EINVAL.
+ */
 static int ov5640_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *a)
 {
+	struct ov5640 *ov5640 = to_ov5640(sd);
+	
+	embest_debug("embest_debug :%s(%d)\n",__FUNCTION__,__LINE__);
 
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
+	ov5640->frame_rate = (unsigned char)(a->parm.capture.timeperframe.denominator);
+	if( ov5640->frame_rate > 30 )
+	{
+		pr_err("[%s][%d]Invaild framerate.\n",__FUNCTION__,__LINE__);
+		return -EINVAL;
+	}
+	embest_debug("zgb ov5640_s_parm ov5640->frame_rate = %d\n",ov5640->frame_rate);
 
-	return 0;
-
-}
-
-
-static int ov5640_g_fmt(struct v4l2_subdev *sd,
-			struct v4l2_mbus_framefmt *mf)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	struct ov5640 *priv = to_ov5640(client);
-
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
-
-
-
+	ov5640_set_framerate(ov5640);
 	return 0;
 }
 
@@ -943,61 +881,27 @@ static int ov5640_s_stream(struct v4l2_subdev *sd, int on)
 
 	on = !!on;
 
-	if (ov5640->streaming == on)
-		goto unlock;
-
 	if (!on) {
 		/* Stop Streaming Sequence */
-		ov5640_set_streaming(ov5640, 0);
 		ov5640->streaming = on;
+		ov5640_write(ov5640->client,0x3007, 0x00);
 		goto unlock;
 	}
 
-	ov5640_set_pixel_clock(ov5640);
-	ov5640_set_frame_size(ov5640);
-	ov5640_set_format(ov5640);
-	ov5640_set_streaming(ov5640, 1);
 	ov5640->streaming = on;
+	ov5640_write(ov5640->client,0x3007, 0xff);
 
 unlock:
 	mutex_unlock(&ov5640->lock);
 	return ret;
 }
 
-static int ov5640_set_test_pattern(struct ov5640 *ov5640, int value)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(&ov5640->sd);
-	int ret;
-	u8 val;
-/*
-	ret = ov5640_read(client, REG_PRE_ISP_CTRL00, &val);
-	if (ret < 0)
-		return ret;
-
-	switch (value) {
-	case 0:
-		val &= ~TEST_PATTERN_ENABLE;
-		break;
-	case 1:
-		val &= VERTICAL_COLOR_BAR_MASK;
-		val |= TEST_PATTERN_ENABLE;
-		break;
-	}
-
-	return ov5640_write(client, REG_PRE_ISP_CTRL00, val);*/
-
-	return 0;
-}
-
 static int ov5640_s_power(struct v4l2_subdev *sd, int on)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	struct soc_camera_subdev_desc *ssdd = soc_camera_i2c_to_desc(client);
+	//struct soc_camera_subdev_desc *ssdd = soc_camera_i2c_to_desc(client);
 	struct ov5640 *priv = to_ov5640(sd);
 	int ret;
-
-	printk("[%s][%d]---hul debug ---ssdd [%x] ,priv->clk[0x%x] \n",__FUNCTION__,__LINE__,ssdd,priv->clk);
-
 
 	if (!on)
 		return soc_camera_power_off(&client->dev, &priv->ssdd_dt, priv->clk);
@@ -1006,55 +910,9 @@ static int ov5640_s_power(struct v4l2_subdev *sd, int on)
 	if (ret < 0)
 		return ret;
 
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
+	embest_debug("embest_debug :%s(%d)\n",__FUNCTION__,__LINE__);
 
-/*
-	ret = ov5640_write_array(client, ov5640_default_regs_init);
-	if (!ret)
-		ret = ov5640_set_resolution(sd);
-	if (!ret)
-		ret = ov5640_write_array(client, ov5640_default_regs_finalise);
-*/
 	return ret;
-}
-
-static int ov5640_s_ctrl(struct v4l2_ctrl *ctrl)
-{
-	struct ov5640 *ov5640 =
-			container_of(ctrl->handler, struct ov5640, ctrls);
-
-	switch (ctrl->id) {
-	case V4L2_CID_TEST_PATTERN:
-		return ov5640_set_test_pattern(ov5640, ctrl->val);
-	}
-
-	return 0;
-}
-
-static struct v4l2_ctrl_ops ov5640_ctrl_ops = {
-	.s_ctrl = ov5640_s_ctrl,
-};
-
-static const char * const ov5640_test_pattern_menu[] = {
-	"Disabled",
-	"Vertical Color Bars",
-};
-
-/* -----------------------------------------------------------------------------
- * V4L2 subdev internal operations
- */
-
-static int ov5640_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	struct v4l2_mbus_framefmt *format =
-				v4l2_subdev_get_try_format(sd, fh->pad, 0);
-
-	dev_dbg(&client->dev, "%s:\n", __func__);
-
-	ov5640_get_default_format(format);
-
-	return 0;
 }
 
 static const struct v4l2_subdev_core_ops ov5640_subdev_core_ops = {
@@ -1066,8 +924,8 @@ static const struct v4l2_subdev_core_ops ov5640_subdev_core_ops = {
 
 static const struct v4l2_subdev_video_ops ov5640_subdev_video_ops = {
 	.s_stream = ov5640_s_stream,
-	.s_mbus_fmt	= ov5640_s_fmt,
-	.g_mbus_fmt	= ov5640_g_fmt,
+	/*.s_mbus_fmt	= ov5640_s_fmt,
+	.g_mbus_fmt	= ov5640_g_fmt,*/
 	.s_parm 	= ov5640_s_parm,
 	.g_parm  	= ov5640_g_parm,
 };
@@ -1085,11 +943,6 @@ static const struct v4l2_subdev_ops ov5640_subdev_ops = {
 	.pad   = &ov5640_subdev_pad_ops,
 };
 
-static const struct v4l2_subdev_internal_ops ov5640_subdev_internal_ops = {
-	.open = ov5640_open,
-};
-
-
 static inline void ov5640_power_down(int enable)
 {
 	gpio_set_value(pwn_gpio, enable);
@@ -1099,19 +952,16 @@ static inline void ov5640_power_down(int enable)
 
 static inline void ov5640_reset(void)
 {
-
 	/* camera reset */
 	gpio_set_value(rst_gpio, 0);
 
 	/* camera power down */
-	gpio_set_value(pwn_gpio, 1);
 	msleep(5);
 	gpio_set_value(pwn_gpio, 0);
 	msleep(5);
 
 	gpio_set_value(rst_gpio, 1);
 	msleep(5);
-	gpio_set_value(pwn_gpio, 1);
 }
 
 static int ov5640_detect(struct v4l2_subdev *sd)
@@ -1127,28 +977,18 @@ static int ov5640_detect(struct v4l2_subdev *sd)
 	if (ret < 0)
 		return ret;
 
-
 	ov5640_reset();
 
-	ov5640_power_down(0);
-
-
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
 	ret = ov5640_read(client, REG_CHIP_ID_HIGH, &id_high);
 
 	if (ret < 0)
 		goto done;
-
-	printk("[%s][%d]---hul debug ---id_high 0x%x\n",__FUNCTION__,__LINE__,id_high);
-
-
+	
 	id = id_high << 8;
 
 	ret = ov5640_read(client, REG_CHIP_ID_LOW, &id_low);
 	if (ret < 0)
 		goto done;
-
-	printk("[%s][%d]---hul debug ---id_low 0x%x\n",__FUNCTION__,__LINE__,id_low);
 
 	id |= id_low;
 
@@ -1160,20 +1000,11 @@ static int ov5640_detect(struct v4l2_subdev *sd)
 		goto done;
 	}
 
-
-	//	ov5640_power_down(1);
 	printk("camera ov5640 is found\n");
-
-	msleep(300);
-
-
-	usleep_range(1000, 2000);
 
 	ret = ov5640_init(sd, 0);
 
 done:
-
-	//ov5640_s_power(subdev, 0);
 	return ret;
 
 }
@@ -1218,13 +1049,11 @@ static int ov5640_probe(struct i2c_client *client,
 	int ret;
 	struct device *dev = &client->dev;
 
+	/* check the platform data */
 	if (!pdata) {
 		dev_err(&client->dev, "platform data not specified\n");
 		return -EINVAL;
 	}
-
-	printk("[%s][%d]---hul debug ---\n",__FUNCTION__,__LINE__);
-
 
 	/* request power down pin */
 	pwn_gpio = of_get_named_gpio(dev->of_node, "pwn", 0);
@@ -1233,9 +1062,7 @@ static int ov5640_probe(struct i2c_client *client,
 		return -ENODEV;
 	}
 
-	printk("[%s][%d]---hul debug ---pwn_gpio :%d\n",__FUNCTION__,__LINE__,pwn_gpio);
-
-
+	/* enable the ov5640 */
 	ret = devm_gpio_request_one(dev, pwn_gpio, GPIOF_OUT_INIT_LOW,
 					"ov5640_pwdn");
 	if (ret < 0)
@@ -1247,23 +1074,23 @@ static int ov5640_probe(struct i2c_client *client,
 		dev_err(dev, "no sensor reset pin available\n");
 		return -EINVAL;
 	}
-
-	printk("[%s][%d]---hul debug ---rst_gpio :%d\n",__FUNCTION__,__LINE__,rst_gpio);
-
+	
+	/* unreset the ov5640 */
 	ret = devm_gpio_request_one(dev, rst_gpio, GPIOF_OUT_INIT_HIGH,
 					"ov5640_reset");
 	if (ret < 0)
 		return ret;
 
-
-
+	/* request and init a ov5640 device */
 	ov5640 = devm_kzalloc(&client->dev, sizeof(*ov5640), GFP_KERNEL);
 	if (!ov5640)
 		return -ENOMEM;
 
+	/* init the ov5640 parameters*/
 	ov5640->pdata = pdata;
 	ov5640->client = client;
 
+	/* get the mclk frequency,set it before clk on */
 	clk = devm_clk_get(&client->dev, "mclk");
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
@@ -1273,42 +1100,13 @@ static int ov5640_probe(struct i2c_client *client,
 	    ov5640->xvclk_frequency > 27000000)
 		return -EINVAL;
 
-	v4l2_ctrl_handler_init(&ov5640->ctrls, 2);
-	ov5640->link_frequency =
-			v4l2_ctrl_new_std(&ov5640->ctrls, &ov5640_ctrl_ops,
-					  V4L2_CID_PIXEL_RATE,
-					  pdata->link_frequency / 2,
-					  pdata->link_frequency, 1,
-					  pdata->link_frequency);
-	v4l2_ctrl_new_std_menu_items(&ov5640->ctrls, &ov5640_ctrl_ops,
-				     V4L2_CID_TEST_PATTERN,
-				     ARRAY_SIZE(ov5640_test_pattern_menu) - 1,
-				     0, 0, ov5640_test_pattern_menu);
-	ov5640->sd.ctrl_handler = &ov5640->ctrls;
-
-	if (ov5640->ctrls.error) {
-		dev_err(&client->dev, "%s: control initialization error %d\n",
-			__func__, ov5640->ctrls.error);
-		return  ov5640->ctrls.error;
-	}
-
+	/* register the i2c device to v4l2 */
 	sd = &ov5640->sd;
 	client->flags |= I2C_CLIENT_SCCB;
 	v4l2_i2c_subdev_init(sd, client, &ov5640_subdev_ops);
 
-	sd->internal_ops = &ov5640_subdev_internal_ops;
 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE |
 		     V4L2_SUBDEV_FL_HAS_EVENTS;
-
-#if defined(CONFIG_MEDIA_CONTROLLER)
-	ov5640->pad.flags = MEDIA_PAD_FL_SOURCE;
-	sd->entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
-	ret = media_entity_init(&sd->entity, 1, &ov5640->pad, 0);
-	if (ret < 0) {
-		v4l2_ctrl_handler_free(&ov5640->ctrls);
-		return ret;
-	}
-#endif
 
 	mutex_init(&ov5640->lock);
 
@@ -1316,17 +1114,14 @@ static int ov5640_probe(struct i2c_client *client,
 	ov5640->frame_size = &ov5640_framesizes[2];
 	ov5640->format_ctrl_regs = ov5640_formats[0].format_ctrl_regs;
 
-
-	ov5640->clk =   v4l2_clk_get(&client->dev, "mclk");
+	/* get the clock */
+	ov5640->clk = v4l2_clk_get(&client->dev, "mclk");
 	if (IS_ERR(ov5640->clk))
 		return PTR_ERR(ov5640->clk);
 
 	ret = ov5640_detect(sd);
 	if (ret < 0)
 		goto error;
-
-	/* Calculate the PLL register value needed */
-	ov5640_pll_calc_params(ov5640);
 
 	ret = v4l2_async_register_subdev(&ov5640->sd);
 	if (ret)
@@ -1337,12 +1132,7 @@ static int ov5640_probe(struct i2c_client *client,
 	return 0;
 
 error:
-	v4l2_ctrl_handler_free(&ov5640->ctrls);
-#if defined(CONFIG_MEDIA_CONTROLLER)
-	media_entity_cleanup(&sd->entity);
-#endif
 	mutex_destroy(&ov5640->lock);
-
 	v4l2_clk_put(ov5640->clk);
 
 	return ret;
@@ -1359,14 +1149,8 @@ static int ov5640_remove(struct i2c_client *client)
 	if(ov5640->clk)
 	v4l2_clk_put(ov5640->clk);
 
-	v4l2_ctrl_handler_free(&ov5640->ctrls);
 	v4l2_async_unregister_subdev(sd);
-#if defined(CONFIG_MEDIA_CONTROLLER)
-	media_entity_cleanup(&sd->entity);
-#endif
 	mutex_destroy(&ov5640->lock);
-
-
 
 	return 0;
 }
@@ -1377,18 +1161,9 @@ static const struct i2c_device_id ov5640_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, ov5640_id);
 
-#if IS_ENABLED(CONFIG_OF)
-static const struct of_device_id ov5640_of_match[] = {
-	{ .compatible = "ovti,ov5640", },
-	{ /* sentinel */ },
-};
-MODULE_DEVICE_TABLE(of, ov5640_of_match);
-#endif
-
 static struct i2c_driver ov5640_i2c_driver = {
 	.driver = {
 		.name	= DRIVER_NAME,
-		.of_match_table = of_match_ptr(ov5640_of_match),
 	},
 	.probe		= ov5640_probe,
 	.remove		= ov5640_remove,
@@ -1397,6 +1172,6 @@ static struct i2c_driver ov5640_i2c_driver = {
 
 module_i2c_driver(ov5640_i2c_driver);
 
-MODULE_AUTHOR("Benoit Parrot <bparrot@ti.com>");
+MODULE_AUTHOR("George zheng <george.zheng@embest-tech.com>");
 MODULE_DESCRIPTION("ov5640 CMOS Image Sensor driver");
 MODULE_LICENSE("GPL v2");
