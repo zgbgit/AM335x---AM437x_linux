@@ -55,7 +55,7 @@
 #define ov5640_ID					0x5640
 
 /* embest debug macro,0 is disable,1 is enable */
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #define embest_debug(format, ...) pr_err ( format, ## __VA_ARGS__)
 #else
