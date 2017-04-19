@@ -32,6 +32,13 @@
 		pinctrl-0 = <&user_leds>;
         
 		compatible = "gpio-leds";
+		
+		4g_sel {
+			label = "user_leds_4g";
+			gpios = <&gpio4 2 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "none";
+			default-state = "on";
+		};
 
 		led1 {
 			label = "user_leds_d4";
@@ -89,7 +96,7 @@
         
 		compatible = "gpio_reset";
 		bt-gpios = <&gpio4 11 GPIO_ACTIVE_HIGH>;
-		wifi-gpios = <&gpio4 10 GPIO_ACTIVE_HIGH>;
+		wifi-gpios = <&sc16is752 4 GPIO_ACTIVE_HIGH>;
 	};
 	
 	backlight: backlight {
@@ -160,6 +167,20 @@
 			system-clock-frequency = <12000000>;
 			system-clock-direction = "in";
 		};
+	};
+
+	wlan_en_reg: fixedregulator@2 {
+		compatible = "regulator-fixed";
+		regulator-name = "wlan-en-regulator";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		
+		/* WLAN_EN GPIO8 for this board ¡§C Bank6, pin9 */
+		gpio = <&gpio4 10 GPIO_ACTIVE_HIGH>;
+		
+		/* WLAN card specific delay */
+		startup-delay-us = <70000>;
+		enable-active-high;
 	};
 
 	fragment@2 {
@@ -386,7 +407,7 @@
 	dmas = <&edma 30
 	&edma 31>;
 	dma-names = "tx", "rx";
-	vmmc-supply = <&dcdc4>;
+	vmmc-supply = <&wlan_en_reg>;
 	bus-width = <4>;
 	max-speed = <24000000>;
 	pinctrl-names = "default", "sleep";
@@ -817,6 +838,7 @@
 		pinctrl-single,pins = <
 			0x240 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_csn3.gpio5_10 */
 			0x248 (PIN_OUTPUT | MUX_MODE7)	/* gpmc_ben1.gpio5_12 */
+			0x1b8 (PIN_OUTPUT | MUX_MODE7)	/* cam0_field gpio4_2 */
 		>;
 	};
 
