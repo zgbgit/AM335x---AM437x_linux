@@ -753,7 +753,6 @@ static void omap_hsmmc_set_clock(struct omap_hsmmc_host *host)
 	regval = regval & ~(CLKD_MASK | DTO_MASK);
 	if ((host->pdata->max_speed != 0) && (host->pdata->max_speed < ios->clock)) {
 		clkdiv = DIV_ROUND_UP(clk_get_rate(host->fclk), host->pdata->max_speed);
-		dev_info(mmc_dev(host->mmc), "rdxy: Set clkdiv to %u\n", clkdiv);
 	}
 	else {
 		clkdiv = calc_divisor(host, ios);
@@ -2512,11 +2511,9 @@ static struct omap_hsmmc_platform_data *of_get_hsmmc_pdata(struct device *dev)
 	pdata->gpio_wp = -EINVAL;
 
 	if (!of_property_read_u32(np, "max-speed", &pdata->max_speed)) {
-		dev_info(dev, "rdxy: max-speed is %d\n", pdata->max_speed);
 	}
 	else {
 		pdata->max_speed = 0;
-		dev_info(dev, "rdxy: max-speed is %d\n", pdata->max_speed);
 	}
 
 	if (of_find_property(np, "ti,non-removable", NULL)) {
